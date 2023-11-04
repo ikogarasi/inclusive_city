@@ -16,11 +16,13 @@ export const Footer = () => {
       sx={{
         backgroundColor: '#b0bc5c',
         p: 7,
+        display: 'flex',
+        justifyContent: 'space-between',
+        flexDirection:'row'
       }}
       component="footer"
     >
-        <Grid container spacing={2} columns={2}>
-            <Grid item xs={1} direction={'column'}>
+
         <Typography variant="body2" color="text.secondary" align="left">
           {"Copyright © "}
           <Link color="inherit" href="https://your-website.com/">
@@ -29,18 +31,15 @@ export const Footer = () => {
           {new Date().getFullYear()}
           {"."}
         </Typography>
-        </Grid>
-        <Grid item>
-        <Typography variant="body2" color="text.secondary">
-          <Link color="inherit" href="/home" sx={{marginRight: 4}}>
+        <Typography variant="body2" color="text.secondary" sx={{alignSelf:'flex-end'}}>
+          <Link color="inherit" href="/" sx={{marginRight: 2}}>
             Home
           </Link>{" "}
           <Link color="inherit" href="/map">
             Map
           </Link>{" "}
         </Typography>
-        </Grid>
-        </Grid>
+        
     </Box>
     );
 }

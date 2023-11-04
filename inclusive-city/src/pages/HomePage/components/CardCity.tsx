@@ -10,9 +10,10 @@ export const CardCity = () => {
 return( 
 <Box
     component="ul"
-    sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', p: 0, m: 0 }}
+    sx={{ flexWrap: 'wrap', p: 0, m: 0 }}
+    
   >
-    <Card sx={{ minWidth: 300, flexGrow: 1, minHeight: 400 }}>
+    <Card sx={{ minWidth: 300, flexGrow: 1, minHeight: 500 }}>
       <CardCover>
         <img
           src='/src/Images/PublicImages/lviv4.jpg'
@@ -22,6 +23,7 @@ return(
         />
       </CardCover>
       <CardContent>
+      <Box textAlign='center'marginTop={10} marginBottom={4} >
         <Typography
           level="body-lg"
           fontWeight="lg"
@@ -37,22 +39,23 @@ return(
           level="body-lg"
           fontWeight="lg"
           fontSize={32}
-          sx={{ textDecoration: 'outline', pr: 10}}
-          textAlign={'center'}
+          sx={{ textDecoration: 'outline'}}
+          textAlign={{xs: 'start', sm: 'center'}}
           textColor="#fff"
-          mt={{ xs: 12, sm: -2}}
+          marginTop={2}
         >
           Where do you want to go?
         </Typography>
-        <Box textAlign='center' sx={{pr: 24, mt:2}}>
         <Button 
         color="success"
         size="lg"
         sx={{ 
           color: '#fff', 
           fontSize: 18, 
-          textTransform: 'none'
-          }}>
+          textTransform: 'none',
+          marginTop: 4
+          }}
+          >
 
           Find your comfortable way!
         </Button>

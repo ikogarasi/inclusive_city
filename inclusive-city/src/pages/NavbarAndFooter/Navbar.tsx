@@ -1,26 +1,41 @@
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import { Box, Stack} from "@mui/joy";
-import { AppBar, Toolbar, createTheme, Button } from "@mui/material";
-import React from "react";
-import { ThemeProvider} from '@mui/material/styles';
+import IconButton from "@mui/material/IconButton";
+import Typography from "@mui/material/Typography";
+import { Box, Stack } from "@mui/joy";
+import {
+  AppBar,
+  Toolbar,
+  createTheme,
+  Button,
+  useMediaQuery,
+  Grid,
+} from "@mui/material";
+import { useState } from "react";
+import { ThemeProvider, useTheme } from "@mui/material/styles";
+import MenuIcon from "@mui/icons-material/Menu";
+import { HeaderDrawer } from "./components/HeaderDrawer";
 
 export const Navbar = () => {
-  
   const greenTheme = createTheme({
     palette: {
-      mode: 'light',
+      mode: "light",
       primary: {
-        main: '#aaba5d',
+        main: "#aaba5d",
       },
     },
   });
-  
-    return(
-        <Box sx={{ flexGrow: 1 }}>
-        <ThemeProvider theme={greenTheme}>    
-        <AppBar position="static">
-          <Toolbar>
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const [isMenuOpened, setIsMenuOpened] = useState(false);
+
+  return (
+    <Box >
+      <ThemeProvider theme={greenTheme}>
+        <AppBar position="absolute" 
+        sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        >
+          <Toolbar sx={{ display: "flex", justifyContent: {sm: "space-between", md: 'start'}, flexDirection: 'row' }}
+          >
             <IconButton
               size="large"
               edge="start"
@@ -29,23 +44,58 @@ export const Navbar = () => {
               sx={{ mr: 2 }}
             >
               <Typography color="common.white" sx={{ my: 2, fontSize: 22 }}>
-        InCity 
-      </Typography>
-            
-      </IconButton>
-      <Stack direction='row' spacing={1} sx = {{ flexGrow: 1}}>
-      <Button href="/home" sx={{ color: '#fff', fontSize: 18, textTransform: 'none' }}>
-                Home
-              </Button>
-              <Button href="/home" sx={{ color: '#fff', fontSize: 18, mr: 50, textTransform: 'none' }}>
-                Map
-              </Button>
-      </Stack>
-            
-      <Button variant="contained" sx={{color: '#fff'}}>Login</Button>
+                InCity
+              </Typography>
+            </IconButton>
+            {isMobile ? (
+              <Box>
+              <IconButton
+              size="large"
+              edge="end"
+              aria-label="menu"
+              sx={{ mr: 2, alignItems: 'flex-end', color: 'white' }}
+              onClick={() => setIsMenuOpened(!isMenuOpened)}
+            >
+              <MenuIcon />
+              </IconButton>
+              </Box>
+            ) : (
+              <Box >
+              <Grid >
+                <Grid item xs={3} >
+                <Button
+                    href="/"
+                    sx={{ color: "#fff", fontSize: 18, textTransform: "none" }}>
+                    Home
+                  </Button>
+                  </Grid>
+                  <Grid >
+                  <Button
+                    href="/map"
+                    sx={{
+                      color: "#fff",
+                      fontSize: 18,
+                      textTransform: "none",
+                    }}>
+                    Map
+                  </Button>
+                </Grid>
+               </Grid>
+               <Grid>
+                  <Button
+                  href="/login"
+                  variant="contained"
+                  sx={{ color: "#fff"}}
+                >
+                  Login
+                </Button>
+                </Grid>
+              </Box>
+            )}
           </Toolbar>
         </AppBar>
-        </ThemeProvider>
-      </Box>
-    );
+        {isMenuOpened && <HeaderDrawer value={isMenuOpened} />}
+      </ThemeProvider>
+    </Box>
+  );
 };
