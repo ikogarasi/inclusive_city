@@ -1,0 +1,55 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33815.320
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Incity.Services.AuthAPI", "Incity.Services.AuthAPI\Incity.Services.AuthAPI.csproj", "{99026770-8B0B-4975-9762-585CE76642C6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Incity.Services.StructureAPI", "Incity.Services.MapAPI\Incity.Services.StructureAPI.csproj", "{E25BB8C7-5784-4A40-A6AE-13E74BCAB763}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Incity.Gateway", "Incity.Gateway\Incity.Gateway.csproj", "{64B67B9D-2BE9-4585-913B-267ABB74E633}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Incity.Services.ReviewAPI", "Incity.Services.ReviewAPI\Incity.Services.ReviewAPI.csproj", "{CD570EF5-BF52-4E1B-B5B9-E155695FFACF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureBlobStorage", "AzureBlobStorage\AzureBlobStorage.csproj", "{5A7DE72B-E327-4ECE-8C9B-9C3F6990FDFC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Incity.Services.QuestionsAPI", "Incity.Services.QuestionsAPI\Incity.Services.QuestionsAPI.csproj", "{7A5FCBB0-B502-46C4-9BAE-449B08ADC5E9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{99026770-8B0B-4975-9762-585CE76642C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{99026770-8B0B-4975-9762-585CE76642C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{99026770-8B0B-4975-9762-585CE76642C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{99026770-8B0B-4975-9762-585CE76642C6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E25BB8C7-5784-4A40-A6AE-13E74BCAB763}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E25BB8C7-5784-4A40-A6AE-13E74BCAB763}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E25BB8C7-5784-4A40-A6AE-13E74BCAB763}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E25BB8C7-5784-4A40-A6AE-13E74BCAB763}.Release|Any CPU.Build.0 = Release|Any CPU
+		{64B67B9D-2BE9-4585-913B-267ABB74E633}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{64B67B9D-2BE9-4585-913B-267ABB74E633}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{64B67B9D-2BE9-4585-913B-267ABB74E633}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{64B67B9D-2BE9-4585-913B-267ABB74E633}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CD570EF5-BF52-4E1B-B5B9-E155695FFACF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CD570EF5-BF52-4E1B-B5B9-E155695FFACF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CD570EF5-BF52-4E1B-B5B9-E155695FFACF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CD570EF5-BF52-4E1B-B5B9-E155695FFACF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A7DE72B-E327-4ECE-8C9B-9C3F6990FDFC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A7DE72B-E327-4ECE-8C9B-9C3F6990FDFC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A7DE72B-E327-4ECE-8C9B-9C3F6990FDFC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A7DE72B-E327-4ECE-8C9B-9C3F6990FDFC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7A5FCBB0-B502-46C4-9BAE-449B08ADC5E9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A5FCBB0-B502-46C4-9BAE-449B08ADC5E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A5FCBB0-B502-46C4-9BAE-449B08ADC5E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A5FCBB0-B502-46C4-9BAE-449B08ADC5E9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5159ED93-577D-4975-8EB8-8EED399761DF}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,3 @@
+Username,Email,Password,Roles
+Admin,sysadmin@incity.net,Serenade,"Admin"
+Test,test@incity.net,dev1,"User"

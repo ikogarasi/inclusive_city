@@ -1,6 +1,6 @@
 import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
-import { Box, Stack } from "@mui/joy";
+import { Box } from "@mui/joy";
 import {
   AppBar,
   Toolbar,
@@ -29,12 +29,18 @@ export const Navbar = () => {
   const [isMenuOpened, setIsMenuOpened] = useState(false);
 
   return (
-    <Box >
+    <Box>
       <ThemeProvider theme={greenTheme}>
-        <AppBar position="absolute" 
-        sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        <AppBar
+          position="absolute"
+          sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
         >
-          <Toolbar sx={{ display: "flex", justifyContent: {sm: "space-between", md: 'start'}, flexDirection: 'row' }}
+          <Toolbar
+            sx={{
+              display: "flex",
+              justifyContent: { xs: "space-between" },
+              flexDirection: "row",
+            }}
           >
             <IconButton
               size="large"
@@ -49,48 +55,53 @@ export const Navbar = () => {
             </IconButton>
             {isMobile ? (
               <Box>
-              <IconButton
-              size="large"
-              edge="end"
-              aria-label="menu"
-              sx={{ mr: 2, alignItems: 'flex-end', color: 'white' }}
-              onClick={() => setIsMenuOpened(!isMenuOpened)}
-            >
-              <MenuIcon />
-              </IconButton>
+                <IconButton
+                  size="large"
+                  edge="end"
+                  aria-label="menu"
+                  sx={{ mr: 2, alignItems: "flex-end", color: "white" }}
+                  onClick={() => setIsMenuOpened(!isMenuOpened)}
+                >
+                  <MenuIcon />
+                </IconButton>
               </Box>
             ) : (
-              <Box >
-              <Grid >
-                <Grid item xs={3} >
+              <Grid
+                item
+                xs={3}
+                sx={{
+                  display: "flex",
+                  flexDirection: "row",
+                }}
+              >
                 <Button
-                    href="/"
-                    sx={{ color: "#fff", fontSize: 18, textTransform: "none" }}>
-                    Home
-                  </Button>
-                  </Grid>
-                  <Grid >
-                  <Button
-                    href="/map"
-                    sx={{
-                      color: "#fff",
-                      fontSize: 18,
-                      textTransform: "none",
-                    }}>
-                    Map
-                  </Button>
-                </Grid>
-               </Grid>
-               <Grid>
-                  <Button
+                  href="/"
+                  sx={{
+                    color: "#fff",
+                    fontSize: 18,
+                    textTransform: "none",
+                  }}
+                >
+                  Home
+                </Button>
+                <Button
+                  href="/map"
+                  sx={{
+                    color: "#fff",
+                    fontSize: 18,
+                    textTransform: "none",
+                  }}
+                >
+                  Map
+                </Button>
+                <Button
                   href="/login"
                   variant="contained"
-                  sx={{ color: "#fff"}}
+                  sx={{ color: "#fff" }}
                 >
                   Login
                 </Button>
-                </Grid>
-              </Box>
+              </Grid>
             )}
           </Toolbar>
         </AppBar>
