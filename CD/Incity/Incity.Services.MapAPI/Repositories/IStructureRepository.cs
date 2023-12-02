@@ -1,11 +1,11 @@
 ﻿using Incity.Services.StructureAPI.Dto;
 using Incity.Services.StructureAPI.Models;
 
-namespace Incity.Services.StructureAPI.Services
+namespace Incity.Services.StructureAPI.Repository
 {
-    public interface IStructureService
+    public interface IStructureRepository
     {
-        Task<IEnumerable<GetStructureDto>> GetStructures();
+        Task<IEnumerable<GetStructureDto>> GetStructures(string? category = null);
         Task<GetStructureDto?> GetStructure(Guid id);
         Task<GetStructureDto> CreateStructure(StructureDto dto);
         Task<GetStructureDto> UpdateStructure(StructureDto dto);

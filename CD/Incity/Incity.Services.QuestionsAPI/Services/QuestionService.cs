@@ -6,7 +6,7 @@ using System.Security.Claims;
 
 namespace Incity.Services.QuestionsAPI.Services
 {
-    public class QuestionService
+    public class QuestionService : IQuestionService
     {
         private readonly QuestionsDbContext _dbContext;
         private readonly HttpContext _httpContext;
@@ -58,15 +58,20 @@ namespace Incity.Services.QuestionsAPI.Services
             var userId = Guid.Parse(_httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier));
             var username = _httpContext.User.FindFirstValue(ClaimTypes.Name);
 
-            var answer = new Answer
-            {
-                QuestionId = questionFromDb.Id,
-                Text = dto.Text,
-                UserId = userId,
-                UserName = username
-            };
+            Answer answer = null;
 
-            await _dbContext.Answers.AddAsync(answer);
+            if (dto.Text != null)
+            {
+                answer = new Answer
+                {
+                    QuestionId = questionFromDb.Id,
+                    Text = dto.Text,
+                    UserId = userId,
+                    UserName = username
+                };
+
+                await _dbContext.Answers.AddAsync(answer);
+            }
 
             questionFromDb.IsClosed = true;
 
@@ -104,6 +109,6 @@ namespace Incity.Services.QuestionsAPI.Services
             }
 
             return await query.ToListAsync();
-        } 
+        }
     }
 }

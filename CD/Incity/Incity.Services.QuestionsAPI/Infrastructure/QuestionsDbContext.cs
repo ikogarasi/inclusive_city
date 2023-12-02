@@ -7,6 +7,7 @@ namespace Incity.Services.QuestionsAPI.Infrastructure
     {
         public QuestionsDbContext(DbContextOptions options) : base(options)
         {
+            Database.EnsureCreated();
         }
 
         public DbSet<Question> Questions { get; set; }

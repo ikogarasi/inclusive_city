@@ -1,4 +1,5 @@
 ﻿using Incity.Services.QuestionsAPI.Infrastructure;
+using Incity.Services.QuestionsAPI.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -8,9 +9,11 @@ namespace Incity.Services.QuestionsAPI.Extensions
 {
     public static class ServiceExtensions
     {
-        public static void ConfigureServices(this IServiceCollection services, IConfiguration configuration) 
-        { 
-        
+        public static void ConfigureServices(this IServiceCollection services)
+        {
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
+            services.AddScoped<IQuestionService, QuestionService>();
         }
 
         public static void ConfigureDbContext(this IServiceCollection services, IConfiguration configuration)

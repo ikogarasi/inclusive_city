@@ -1,6 +1,6 @@
 ﻿using Incity.Services.StructureAPI.Configuration;
 using Incity.Services.StructureAPI.Messages;
-using Incity.Services.StructureAPI.Services;
+using Incity.Services.StructureAPI.Repository;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
@@ -49,7 +49,7 @@ namespace Incity.Services.StructureAPI.RabbitMQConsumer
 
                 using var scope = _serviceProvider.CreateScope();
 
-                var structureService = scope.ServiceProvider.GetRequiredService<IStructureService>();
+                var structureService = scope.ServiceProvider.GetRequiredService<IStructureRepository>();
 
                 structureService.ChangeRating(structureRatingDto.StructureId, structureRatingDto.Rating)
                     .GetAwaiter().GetResult();

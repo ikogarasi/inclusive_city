@@ -2,6 +2,7 @@
 using Incity.Services.StructureAPI.Configuration;
 using Incity.Services.StructureAPI.Infrastructure;
 using Incity.Services.StructureAPI.RabbitMQConsumer;
+using Incity.Services.StructureAPI.Repository;
 using Incity.Services.StructureAPI.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -22,8 +23,9 @@ namespace Incity.Services.StructureAPI.Extensions
             services.AddSingleton<IRabbitMQConfiguration>(i =>
                 i.GetRequiredService<IOptions<RabbitMQConfiguration>>().Value);
 
-            services.AddScoped<IStructureService, StructureService>();
-            
+            services.AddScoped<IStructureRepository, StructureRepository>();
+            services.AddScoped<INearestStructureService, NearestStructureService>();
+
             services.AddTransient<IAzureStorage, AzureStorage>();
             services.AddHostedService<RabbitMQReviewConsumer>();
         }

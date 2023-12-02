@@ -1,40 +1,51 @@
-﻿using Azure.Storage.Blobs.Models;
-using AzureBlobStorage;
+﻿using AzureBlobStorage;
 using Incity.Services.StructureAPI.Dto;
 using Incity.Services.StructureAPI.Infrastructure;
 using Incity.Services.StructureAPI.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Identity.Client;
-using System.Runtime.CompilerServices;
 
-namespace Incity.Services.StructureAPI.Services
+namespace Incity.Services.StructureAPI.Repository
 {
-    public class StructureService : IStructureService
+    public class StructureRepository : IStructureRepository
     {
         private readonly StructureDbContext _dbContext;
         private readonly IAzureStorage _azureStorage;
 
-        public StructureService(StructureDbContext dbContext, IAzureStorage azureStorage)
+        public StructureRepository(StructureDbContext dbContext, IAzureStorage azureStorage)
         {
             _dbContext = dbContext;
             _azureStorage = azureStorage;
         }
 
-        public async Task<IEnumerable<GetStructureDto>> GetStructures()
+        public async Task<IEnumerable<GetStructureDto>> GetStructures(string? category = null)
         {
-            return await _dbContext.CategoryStructures
-                .AsNoTracking()
-                .Include(i => i.Structure)
-                .Include(i => i.Category)
-                .Select(i => new GetStructureDto(
+            var structures = _dbContext.CategoryStructures
+                .AsNoTracking();
+
+            if (category != null)
+            {
+                structures = structures
+                    .Include(i => i.Structure)
+                    .Include(i => i.Category)
+                    .Where(i => i.Category.NormalizedName == category.ToUpper());
+            }
+            else
+            {
+                structures = structures
+                    .Include(i => i.Structure)
+                    .Include(i => i.Category);
+            }
+
+            return await structures.Select(i => new GetStructureDto(
                     i.Structure.Id,
                     i.Structure.DisplayName,
                     i.Structure.Description,
                     i.Structure.ImageUrl,
                     i.Category.Name,
                     i.Structure.Latitude,
-                    i.Structure.Longitude, 
-                    i.Structure.Rating))
+                    i.Structure.Longitude,
+                    i.Structure.Rating,
+                    0))
                 .ToListAsync();
         }
 
@@ -53,7 +64,8 @@ namespace Incity.Services.StructureAPI.Services
                     i.Category.Name,
                     i.Structure.Latitude,
                     i.Structure.Longitude,
-                    i.Structure.Rating))
+                    i.Structure.Rating,
+                    0))
                 .FirstOrDefaultAsync();
         }
 
@@ -103,7 +115,8 @@ namespace Incity.Services.StructureAPI.Services
                 category.Name,
                 structure.Latitude,
                 structure.Longitude,
-                structure.Rating);
+                structure.Rating,
+                0);
         }
 
         public async Task<GetStructureDto> UpdateStructure(StructureDto dto)
@@ -155,7 +168,8 @@ namespace Incity.Services.StructureAPI.Services
                 categoryFromDb.Name,
                 structureFromDb.Latitude,
                 structureFromDb.Longitude,
-                structureFromDb.Rating);
+                structureFromDb.Rating,
+                0);
         }
 
         public async Task DeleteStructure(Guid id)
