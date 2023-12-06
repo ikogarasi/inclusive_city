@@ -9,6 +9,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using NSwag.Generation.Processors.Security;
+using NSwag;
 using System.Text;
 
 namespace Incity.Services.StructureAPI.Extensions
@@ -28,6 +30,20 @@ namespace Incity.Services.StructureAPI.Extensions
 
             services.AddTransient<IAzureStorage, AzureStorage>();
             services.AddHostedService<RabbitMQReviewConsumer>();
+
+            services.AddOpenApiDocument(config =>
+            {
+                config.Title = "Structure API";
+
+                config.DocumentProcessors.Add(new SecurityDefinitionAppender("Bearer",
+                    new OpenApiSecurityScheme
+                    {
+                        Type = OpenApiSecuritySchemeType.ApiKey,
+                        Name = "Authorization",
+                        Description = "Copy 'Bearer ' + valid JWT token",
+                        In = OpenApiSecurityApiKeyLocation.Header
+                    }));
+            });
         }
 
         public static void ConfigureDbContext(this IServiceCollection services, IConfiguration configuration)

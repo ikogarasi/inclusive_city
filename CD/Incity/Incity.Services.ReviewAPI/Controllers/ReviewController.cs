@@ -2,7 +2,6 @@
 using Incity.Services.ReviewAPI.Models;
 using Incity.Services.ReviewAPI.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -20,6 +19,7 @@ namespace Incity.Services.ReviewAPI.Controllers
         }
 
         [HttpGet("{structureId}")]
+        [ProducesResponseType(typeof(IEnumerable<Review>), 200)]
         public async Task<IActionResult> GetReviewsForStructure(Guid structureId)
         {
             return Ok(await _reviewService.GetReviewsForStructure(structureId));
@@ -27,7 +27,8 @@ namespace Incity.Services.ReviewAPI.Controllers
 
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> SubmitReview(ReviewDto dto)
+        [ProducesResponseType(typeof(Review), 200)]
+        public async Task<IActionResult> SubmitReview([FromBody] ReviewDto dto)
         {
             var username = User.FindFirstValue(ClaimTypes.Name);
 

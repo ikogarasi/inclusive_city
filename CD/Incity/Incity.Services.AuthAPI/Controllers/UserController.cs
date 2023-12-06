@@ -4,6 +4,7 @@ using Incity.Services.AuthAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using NSwag.Annotations;
 
 namespace Incity.Services.AuthAPI.Controllers
 {
@@ -26,6 +27,7 @@ namespace Incity.Services.AuthAPI.Controllers
 
         [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
         [HttpGet("UsersForAdministration")]
+        [ProducesResponseType(typeof(IEnumerable<UserForAdministrationDto>), 200)]
         public async Task<IActionResult> GetUserForAdministration()
         {
             var result = await _userService.GetUserForAdministration();
@@ -34,7 +36,8 @@ namespace Incity.Services.AuthAPI.Controllers
         }
 
         [HttpPost("Login")]
-        public async Task<IActionResult> Login(LoginDto dto)
+        [ProducesResponseType(typeof(TokenDto), 200)]
+        public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
             var user = await _userService.GetUser(dto.UserName);
 
@@ -59,7 +62,7 @@ namespace Incity.Services.AuthAPI.Controllers
         }
 
         [HttpPost("Register")]
-        public async Task<IActionResult> Register(RegisterDto dto)
+        public async Task<IActionResult> Register([FromBody] RegisterDto dto)
         {
             if (await _userService.GetUser(dto.UserName) != null)
             {
@@ -79,7 +82,8 @@ namespace Incity.Services.AuthAPI.Controllers
         }
 
         [HttpPost("Refresh-Token")]
-        public async Task<IActionResult> RefreshToken(TokenDto dto)
+        [ProducesResponseType(typeof(TokenDto), 200)]
+        public async Task<IActionResult> RefreshToken([FromBody] TokenDto dto)
         {
             var refreshToken = dto.RefreshToken;
             var accessToken = dto.AccessToken;
@@ -113,7 +117,8 @@ namespace Incity.Services.AuthAPI.Controllers
 
         [Authorize(AuthenticationSchemes = "Bearer")]
         [HttpPost("Edit")]
-        public async Task<IActionResult> Edit(EditDto dto)
+        [ProducesResponseType(typeof(IncityUser), 200)]
+        public async Task<IActionResult> Edit([FromBody] EditDto dto)
         {
             try
             {

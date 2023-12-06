@@ -1,4 +1,5 @@
 ﻿using Incity.Services.StructureAPI.Infrastructure;
+using Incity.Services.StructureAPI.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -18,6 +19,7 @@ namespace Incity.Services.StructureAPI.Controllers
         }
 
         [HttpGet]
+        [ProducesResponseType(typeof(IEnumerable<Category>), 200)]
         public async Task<IActionResult> Get()
         {
             return Ok(await _structureDbContext.Categories

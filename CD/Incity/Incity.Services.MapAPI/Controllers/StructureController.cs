@@ -22,12 +22,14 @@ namespace Incity.Services.StructureAPI.Controllers
         }
 
         [HttpGet]
+        [ProducesResponseType(typeof(IEnumerable<GetStructureDto>), 200)]
         public async Task<IActionResult> GetAllStructures(double latitude, double longitude, int count, string? category)
         {
             return Ok(await _nearestStructureService.FindNearest(new(latitude, longitude), count, category));
         }
 
         [HttpGet("{id}")]
+        [ProducesResponseType(typeof(GetStructureDto), 200)]
         public async Task<IActionResult> GetStructure(Guid id, double latitude, double longitude)
         {
             return Ok(await _nearestStructureService.FindStructureById(new(latitude, longitude), id));
@@ -37,6 +39,7 @@ namespace Incity.Services.StructureAPI.Controllers
         [HttpPost]
         [Authorize(Roles = "Admin")]
         [Consumes("multipart/form-data")]
+        [ProducesResponseType(typeof(GetStructureDto), 200)]
         public async Task<IActionResult> CreateStructure([FromForm] StructureDto dto)
         {
             return Ok(await _structureRepository.CreateStructure(dto));
@@ -45,6 +48,7 @@ namespace Incity.Services.StructureAPI.Controllers
         [HttpPut]
         [Authorize(Roles = "Admin")]
         [Consumes("multipart/form-data")]
+        [ProducesResponseType(typeof(GetStructureDto), 200)]
         public async Task<IActionResult> UpdateStructure([FromForm] StructureDto dto)
         {
             return Ok(await _structureRepository.UpdateStructure(dto));

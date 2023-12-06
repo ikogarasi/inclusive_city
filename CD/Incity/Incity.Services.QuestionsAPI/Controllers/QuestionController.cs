@@ -1,4 +1,5 @@
 ﻿using Incity.Services.QuestionsAPI.Dto;
+using Incity.Services.QuestionsAPI.Models;
 using Incity.Services.QuestionsAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -20,13 +21,15 @@ namespace Incity.Services.QuestionsAPI.Controllers
         }
 
         [HttpGet]
+        [ProducesResponseType(typeof(IEnumerable<Topic>), 200)]
         public async Task<IActionResult> GetAllQuestions(bool pending = false)
         {
             return Ok(await _questionService.GetQuestionsForUser(pending));
         }
 
         [HttpPost]
-        public async Task<IActionResult> SubmitQuestion(QuestionDto dto)
+        [ProducesResponseType(typeof(Question), 200)]
+        public async Task<IActionResult> SubmitQuestion([FromBody] QuestionDto dto)
         {
             return Ok(await _questionService.AddQuestion(dto));
         }

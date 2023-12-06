@@ -7,7 +7,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using System.Runtime.CompilerServices;
+using NSwag.Generation.Processors.Security;
+using NSwag;
 using System.Text;
 
 namespace Incity.Services.AuthAPI.Extensions
@@ -24,6 +25,20 @@ namespace Incity.Services.AuthAPI.Extensions
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
             services.AddScoped<IUserService, UserService>();
+
+            services.AddOpenApiDocument(config =>
+            {
+                config.Title = "Auth API";
+
+                config.DocumentProcessors.Add(new SecurityDefinitionAppender("Bearer",
+                    new OpenApiSecurityScheme
+                    {
+                        Type = OpenApiSecuritySchemeType.ApiKey,
+                        Name = "Authorization",
+                        Description = "Copy 'Bearer ' + valid JWT token",
+                        In = OpenApiSecurityApiKeyLocation.Header
+                    }));
+            });
         }
 
         public static void ConfigureDbContext(this IServiceCollection services,  IConfiguration configuration)

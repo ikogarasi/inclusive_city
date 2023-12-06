@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore.SqlServer.Update.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using NSwag.Generation.Processors.Security;
+using NSwag;
 using System.Text;
 
 namespace Incity.Services.ReviewAPI.Extensions
@@ -24,6 +26,20 @@ namespace Incity.Services.ReviewAPI.Extensions
             services.AddSingleton<IRabbitMQMessageSender, RabbitMQMessageSender>();
 
             services.AddScoped<IReviewService, ReviewService>();
+
+            services.AddOpenApiDocument(config =>
+            {
+                config.Title = "Review API";
+
+                config.DocumentProcessors.Add(new SecurityDefinitionAppender("Bearer",
+                    new OpenApiSecurityScheme
+                    {
+                        Type = OpenApiSecuritySchemeType.ApiKey,
+                        Name = "Authorization",
+                        Description = "Copy 'Bearer ' + valid JWT token",
+                        In = OpenApiSecurityApiKeyLocation.Header
+                    }));
+            });
         }
 
         public static void ConfigureDbContext(this IServiceCollection services, IConfiguration configuration)
