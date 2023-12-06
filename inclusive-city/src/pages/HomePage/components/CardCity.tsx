@@ -23,7 +23,7 @@ return(
         />
       </CardCover>
       <CardContent>
-      <Box textAlign='center'marginTop={10} marginBottom={4} >
+      <Box textAlign='center'marginTop={3} marginBottom={4} >
         <Typography
           level="body-lg"
           fontWeight="lg"

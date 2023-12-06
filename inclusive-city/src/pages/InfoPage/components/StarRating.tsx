@@ -6,9 +6,9 @@ import SentimentDissatisfiedIcon from '@mui/icons-material/SentimentDissatisfied
 import SentimentSatisfiedIcon from '@mui/icons-material/SentimentSatisfied';
 import SentimentSatisfiedAltIcon from '@mui/icons-material/SentimentSatisfiedAltOutlined';
 import SentimentVerySatisfiedIcon from '@mui/icons-material/SentimentVerySatisfied';
-import { Box, Typography } from '@mui/material';
+import { Box, Button, TextField, Typography } from '@mui/material';
 
-export const StarRating = () => {
+export const StarRating: React.FC<{readonly: boolean, sizeText: string}> = (props) => {
     
 const StyledRating = styled(Rating)(({ theme }) => ({
   '& .MuiRating-iconEmpty .MuiSvgIcon-root': {
@@ -51,17 +51,47 @@ function IconContainer(props: IconContainerProps) {
   return <span {...other}>{customIcons[value].icon}</span>;
 }
 
-const [value, setValue] = React.useState<number >(2);
+const [value, setValue] = React.useState<number >(5);
 const [hover, setHover] = React.useState(-1);
+const [visible, setVisible] = React.useState(false);
 
 const updateLabel = (newLabel: any) => {
   setValue(newLabel);
 }
 
+const visibleDescription = (click: any) => {
+  if(click) {
+    return (
+        <div>
+          <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        maxWidth: '100%'
+    }}>
+    <TextField
+          id="outlined-multiline-static"
+          label="Description"
+          multiline
+          rows={4}
+          placeholder="Description (Optional)"
+          sx={{marginTop: 2}}
+        />
+        </Box>
+        <div style={{marginTop: 10, display: 'flex',
+        flexDirection: 'column',
+        maxWidth: '100%'}}>
+        <Button variant='outlined' color="success"
+        >Share</Button>
+        </div>
+        </div>
+    );
+  }
+}
 
 
   return (
-    
+    <div>
     <Box sx={{
         display: 'flex',
           flexDirection: 'row',
@@ -75,16 +105,18 @@ const updateLabel = (newLabel: any) => {
       getLabelText={(value: number) => customIcons[value].label}
       onChange={(event, newValue) => {
         updateLabel(newValue);
+        setVisible(true);
       }}
       onChangeActive={(event, newHover) => {
         setHover(newHover);
       }}
       highlightSelectedOnly
       size='large'
+      readOnly={props.readonly}
     />
     {value !== null && (
       <Typography
-        fontSize="30px"
+        fontSize={props.sizeText}
         fontWeight="md"
         marginLeft={2}
         sx={{ ml: 2 }}>
@@ -92,8 +124,10 @@ const updateLabel = (newLabel: any) => {
         </Typography>
       )}
       
-      
       </Box>
+      
+        {visibleDescription(visible)}
+      </div>
   );
 
 }

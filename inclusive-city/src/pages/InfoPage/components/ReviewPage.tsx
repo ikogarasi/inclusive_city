@@ -1,18 +1,11 @@
-import { Star } from "@mui/icons-material";
 import { Avatar, Button, Typography } from "@mui/joy";
-import { Box } from "@mui/material";
-import React from "react";
+import { Box, Divider} from "@mui/material";
 import TwoSidedLayout from "./TwoSlideLayout";
-import Rating, { IconContainerProps } from '@mui/material/Rating';
-import SentimentVeryDissatisfiedIcon from '@mui/icons-material/SentimentVeryDissatisfied';
-import SentimentDissatisfiedIcon from '@mui/icons-material/SentimentDissatisfied';
-import SentimentSatisfiedIcon from '@mui/icons-material/SentimentSatisfied';
-import SentimentSatisfiedAltIcon from '@mui/icons-material/SentimentSatisfiedAltOutlined';
-import SentimentVerySatisfiedIcon from '@mui/icons-material/SentimentVerySatisfied';
 import { StarRating } from "./StarRating";
 
 export const ReviewPage = () => {
     return (
+      <Box sx={{paddingBottom: 5}}>
         <TwoSidedLayout>
         <Box sx={{
             display: 'flex',
@@ -32,18 +25,37 @@ export const ReviewPage = () => {
         offer better.
       </Typography>
       <Button size="lg" href="/map" color="success">Return to explore more</Button>
-       <StarRating/>
-      <Typography textColor="text.secondary">
-        The resource and tips in Frames X are worth a fortune. My team loves the
-        design kits.
-      </Typography>
-      <Typography
+       <StarRating readonly={false} sizeText="30px" />
+        </Box>
+        </TwoSidedLayout>
+        <Divider variant="middle"></Divider>
+        <Box sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            marginLeft: 2,
+            marginTop: 3
+        }}>
+        <Typography level="h2">
+          The latest comments:
+          </Typography> 
+        <Box sx={{marginLeft: 5, marginTop: 3}}>  
+        <Typography
         startDecorator={<Avatar component="span" size="lg" variant="outlined" />}
         sx={{ '--Typography-gap': '12px' }}
       >
-        <b>John Seed</b>, Apple Inc.
-      </Typography>  
+        <b>John Seed</b>, jonh.seed@gmail.com
+      </Typography>
+      <Typography sx={{marginTop: 2}}>
+      <i>16 June 2023</i>
+      </Typography>
+      <StarRating readonly={true} sizeText="30px"/>
+        <Typography textColor="text.secondary" sx={{marginTop: 2}}>
+        The resource and tips in Frames X are worth a fortune. My team loves the
+        design kits.
+      </Typography>
+      
+      </Box> 
+      </Box>
         </Box>
-        </TwoSidedLayout>
     );
 }

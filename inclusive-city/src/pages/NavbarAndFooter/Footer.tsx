@@ -15,10 +15,12 @@ export const Footer = () => {
         <Box
       sx={{
         backgroundColor: '#b0bc5c',
-        p: 7,
+        p: 4,
         display: 'flex',
         justifyContent: 'space-between',
-        flexDirection:'row'
+        flexDirection:'row',
+        bottom: 0,
+        position: "relative",
       }}
       component="footer"
     >
@@ -31,7 +33,7 @@ export const Footer = () => {
           {new Date().getFullYear()}
           {"."}
         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{alignSelf:'flex-end'}}>
+        <Typography variant="body2" color="text.secondary" >
           <Link color="inherit" href="/" sx={{marginRight: 2}}>
             Home
           </Link>{" "}

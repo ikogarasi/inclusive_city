@@ -1,13 +1,12 @@
 import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
-import { Box, Stack } from "@mui/joy";
+import { Box } from "@mui/joy";
 import {
   AppBar,
   Toolbar,
   createTheme,
   Button,
   useMediaQuery,
-  Grid,
 } from "@mui/material";
 import { useState } from "react";
 import { ThemeProvider, useTheme } from "@mui/material/styles";
@@ -29,67 +28,65 @@ export const Navbar = () => {
   const [isMenuOpened, setIsMenuOpened] = useState(false);
 
   return (
-    <Box >
+    <Box sx={{display: 'flex', paddingBottom: 7}}>
       <ThemeProvider theme={greenTheme}>
-        <AppBar position="absolute" 
-        sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        <AppBar
+          position="absolute"
+          sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
         >
-          <Toolbar sx={{ display: "flex", justifyContent: {sm: "space-between", md: 'start'}, flexDirection: 'row' }}
-          >
-            <IconButton
-              size="large"
-              edge="start"
-              color="inherit"
-              aria-label="menu"
-              sx={{ mr: 2 }}
-            >
-              <Typography color="common.white" sx={{ my: 2, fontSize: 22 }}>
+          <Toolbar>
+              <Typography variant="h6" color="common.white" sx={{ my: 2, fontSize: 22, flexGrow: 1  }}>
                 InCity
               </Typography>
-            </IconButton>
             {isMobile ? (
               <Box>
-              <IconButton
-              size="large"
-              edge="end"
-              aria-label="menu"
-              sx={{ mr: 2, alignItems: 'flex-end', color: 'white' }}
-              onClick={() => setIsMenuOpened(!isMenuOpened)}
-            >
-              <MenuIcon />
-              </IconButton>
+                <IconButton
+                  size="large"
+                  edge="end"
+                  aria-label="menu"
+                  sx={{ mr: 2, alignItems: "flex-end", color: "white" }}
+                  onClick={() => setIsMenuOpened(!isMenuOpened)}
+                >
+                  <MenuIcon />
+                </IconButton>
               </Box>
             ) : (
-              <Box >
-              <Grid >
-                <Grid item xs={3} >
+              <Box sx={{
+                display: "flex",
+                flexDirection: "row",
+              }}>
+              <Box
+              >
                 <Button
-                    href="/"
-                    sx={{ color: "#fff", fontSize: 18, textTransform: "none" }}>
-                    Home
-                  </Button>
-                  </Grid>
-                  <Grid >
-                  <Button
-                    href="/map"
-                    sx={{
-                      color: "#fff",
-                      fontSize: 18,
-                      textTransform: "none",
-                    }}>
-                    Map
-                  </Button>
-                </Grid>
-               </Grid>
-               <Grid>
-                  <Button
+                  href="/"
+                  sx={{
+                    color: "#fff",
+                    fontSize: 18,
+                    textTransform: "none",
+                  }}
+                >
+                  Home
+                </Button>
+                <Button
+                  href="/map"
+                  sx={{
+                    color: "#fff",
+                    fontSize: 18,
+                    textTransform: "none",
+                  }}
+                >
+                  Map
+                </Button>
+              </Box>
+              <Box >
+              <Button
                   href="/login"
                   variant="contained"
-                  sx={{ color: "#fff"}}
+                  sx={{ color: "#fff" }}
                 >
                   Login
                 </Button>
-                </Grid>
+              </Box>
               </Box>
             )}
           </Toolbar>
