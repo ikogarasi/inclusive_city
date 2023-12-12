@@ -62,6 +62,7 @@ namespace Incity.Services.AuthAPI.Controllers
         }
 
         [HttpPost("Register")]
+        [ProducesResponseType(typeof(void), 200)]
         public async Task<IActionResult> Register([FromBody] RegisterDto dto)
         {
             if (await _userService.GetUser(dto.UserName) != null)

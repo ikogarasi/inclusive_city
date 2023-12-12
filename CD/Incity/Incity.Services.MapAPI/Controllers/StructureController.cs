@@ -56,6 +56,7 @@ namespace Incity.Services.StructureAPI.Controllers
 
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
+        [ProducesResponseType(typeof(void), 200)]
         public async Task<IActionResult> DeleteStructure(Guid id)
         {
             await _structureRepository.DeleteStructure(id);

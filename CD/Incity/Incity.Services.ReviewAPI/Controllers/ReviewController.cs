@@ -37,6 +37,7 @@ namespace Incity.Services.ReviewAPI.Controllers
 
         [HttpDelete("{reviewId}")]
         [Authorize(Roles = "Admin")]
+        [ProducesResponseType(typeof(void), 200)]
         public async Task<IActionResult> RemoveReview(Guid reviewId)
         {
             await _reviewService.RemoveReview(reviewId);

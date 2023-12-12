@@ -115,7 +115,7 @@ export class ReviewClient extends ApiBase {
         return Promise.resolve<Review>(null as any);
     }
 
-    removeReview(reviewId: string): Promise<FileResponse | null> {
+    removeReview(reviewId: string): Promise<void> {
         let url_ = this.baseUrl + "/api/Review/{reviewId}";
         if (reviewId === undefined || reviewId === null)
             throw new Error("The parameter 'reviewId' must be defined.");
@@ -125,7 +125,6 @@ export class ReviewClient extends ApiBase {
         let options_: RequestInit = {
             method: "DELETE",
             headers: {
-                "Accept": "application/json"
             }
         };
 
@@ -136,26 +135,19 @@ export class ReviewClient extends ApiBase {
         });
     }
 
-    protected processRemoveReview(response: Response): Promise<FileResponse | null> {
+    protected processRemoveReview(response: Response): Promise<void> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200 || status === 206) {
-            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
-            let fileNameMatch = contentDisposition ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(contentDisposition) : undefined;
-            let fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[3] || fileNameMatch[2] : undefined;
-            if (fileName) {
-                fileName = decodeURIComponent(fileName);
-            } else {
-                fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
-                fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
-            }
-            return response.blob().then(blob => { return { fileName: fileName, data: blob, status: status, headers: _headers }; });
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<FileResponse | null>(null as any);
+        return Promise.resolve<void>(null as any);
     }
 }
 
@@ -172,13 +164,6 @@ export interface ReviewDto {
     structureId: string;
     description?: string | null;
     rating: number;
-}
-
-export interface FileResponse {
-    data: Blob;
-    status: number;
-    fileName?: string;
-    headers?: { [name: string]: any };
 }
 
 export class ApiException extends Error {

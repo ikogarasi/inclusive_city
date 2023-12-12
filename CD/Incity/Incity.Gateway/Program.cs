@@ -6,7 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(policy =>
+    options.AddPolicy("CorsAllowed", policy =>
     {
         policy.AllowAnyOrigin()
             .AllowAnyMethod()
@@ -20,8 +20,7 @@ builder.Services.ConfigureJwt(builder.Configuration);
 
 var app = builder.Build();
 
+app.UseCors("CorsAllowed");
 await app.UseOcelot();
-
-app.UseCors();
 
 app.Run();
