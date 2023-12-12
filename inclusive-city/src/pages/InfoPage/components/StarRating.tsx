@@ -7,8 +7,9 @@ import SentimentSatisfiedIcon from '@mui/icons-material/SentimentSatisfied';
 import SentimentSatisfiedAltIcon from '@mui/icons-material/SentimentSatisfiedAltOutlined';
 import SentimentVerySatisfiedIcon from '@mui/icons-material/SentimentVerySatisfied';
 import { Box, Button, TextField, Typography } from '@mui/material';
+import { useSubmitReviewMutation } from '../../../api/reviewRtkApi';
 
-export const StarRating: React.FC<{readonly: boolean, sizeText: string}> = (props) => {
+export const StarRating: React.FC<{readonly: boolean, sizeText: string, idStructure: string, rating: number}> = (props) => {
     
 const StyledRating = styled(Rating)(({ theme }) => ({
   '& .MuiRating-iconEmpty .MuiSvgIcon-root': {
@@ -51,9 +52,10 @@ function IconContainer(props: IconContainerProps) {
   return <span {...other}>{customIcons[value].icon}</span>;
 }
 
-const [value, setValue] = React.useState<number >(5);
+const [value, setValue] = React.useState<number >(props.rating);
 const [hover, setHover] = React.useState(-1);
 const [visible, setVisible] = React.useState(false);
+const [description, setDescription] = React.useState('');
 
 const updateLabel = (newLabel: any) => {
   setValue(newLabel);
@@ -74,6 +76,10 @@ const visibleDescription = (click: any) => {
           label="Description"
           multiline
           rows={4}
+          value={description}
+          onChange={(e) => {
+            setDescription(e.target.value);
+          }}
           placeholder="Description (Optional)"
           sx={{marginTop: 2}}
         />
@@ -81,7 +87,7 @@ const visibleDescription = (click: any) => {
         <div style={{marginTop: 10, display: 'flex',
         flexDirection: 'column',
         maxWidth: '100%'}}>
-        <Button variant='outlined' color="success"
+        <Button variant='outlined' color="success" onClick={addReviewButton}
         >Share</Button>
         </div>
         </div>
@@ -89,6 +95,17 @@ const visibleDescription = (click: any) => {
   }
 }
 
+  const [addReview] = useSubmitReviewMutation();
+  
+  async function addReviewButton(e: React.MouseEvent<HTMLElement>) {
+   e.preventDefault();
+   if(value == 0){
+     console.log("Rate can`t be 0")
+   } else {
+    await addReview({structureId: props.idStructure, description: description, rating: value})
+   }
+
+  }
 
   return (
     <div>

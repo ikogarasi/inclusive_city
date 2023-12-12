@@ -1,5 +1,6 @@
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormHelperText, Grid, IconButton, InputLabel, MenuItem, Select, SelectChangeEvent, TextField, Typography, useTheme } from "@mui/material";
 import React, { FormEvent, useState } from "react";
+import { useCreateStructureMutation } from "../../../api/structureRtkApi";
 
 interface ValidationErrors {
   name: boolean;
@@ -22,7 +23,9 @@ export const AddInfoPage = () => {
   const [description, setDescription] = React.useState('');
   const [errorMessage, setErrorMessage] = React.useState<ValidationErrors>();
   const [imageUrl, setImageUrl] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
   const [success, setSuccess] = useState('');
+  const [addStructure] = useCreateStructureMutation();
 
   const handleChange = (event: SelectChangeEvent) => {
     setCategory(event.target.value);
@@ -40,7 +43,7 @@ export const AddInfoPage = () => {
 
   }
 
-  const checkInfo = () => {
+  const checkInfo = async () => {
     
     const validation: ValidationErrors = {
       name: false,
@@ -58,15 +61,15 @@ export const AddInfoPage = () => {
       validation.name = true;
     }
 
-    if (newCategory?.length < 4) {
+    if (category == 'New category' && newCategory?.length < 4 ) {
       validation.newCategory = true;
     }
 
-    if (isNaN(Number(latitude)) && latitude?.length < 15 ) {
+    if (isNaN(Number(latitude))) {
       validation.latitude = true;
     }
 
-    if (isNaN(Number(longitude)) && longitude?.length < 15 ) {
+    if (isNaN(Number(longitude))) {
       validation.longitude = true;
     }
 
@@ -78,17 +81,19 @@ export const AddInfoPage = () => {
       validation.category = true;
     }
 
-    if (imageUrl !== null && imageUrl !== '') {
-      validation.imageValid = true;
-    }
-
+    
+    console.log(validation);
     if (Object.values(validation).indexOf(true) >= 0) {
       setErrorMessage(validation);
+    }
+    else {
+      console.log("lox");
+     await addStructure({name: name, image: imageFile, description: description, category: category, latitude: Number(latitude), longitude: Number(longitude)})
     }
   
   }
 
-  const handleFileUpload = (event) => {
+  const handleFileUpload = async (event) => {
     const file = event.target.files[0];
     const reader = new FileReader();
 
@@ -96,14 +101,14 @@ export const AddInfoPage = () => {
       setImageUrl(reader.result);
     };
 
+    reader.readAsDataURL(file);
+
     if(imageUrl !== null){
       setSuccess('You upload photo succesfuly!');
     } else {
       setSuccess('Try again!')
     }
-
-
-    reader.readAsDataURL(file);
+    setImageFile(file);
   };
 
   const newInputCategory = () => {

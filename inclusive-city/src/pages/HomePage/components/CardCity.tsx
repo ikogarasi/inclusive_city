@@ -51,7 +51,7 @@ return(
         size="lg"
         sx={{ 
           color: '#fff', 
-          fontSize: 18, 
+          fontSize: 22, 
           textTransform: 'none',
           marginTop: 4
           }}

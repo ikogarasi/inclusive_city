@@ -7,7 +7,8 @@ import { typographyClasses } from '@mui/joy/Typography';
 export default function TwoSidedLayout({
   children,
   reversed,
-}: React.PropsWithChildren<{ reversed?: boolean }>) {
+  imgUrl
+}: React.PropsWithChildren<{ reversed?: boolean, imgUrl: string }>) {
   return (
     <Container
       sx={(theme) => ({
@@ -67,7 +68,7 @@ export default function TwoSidedLayout({
         })}
       >
         <img
-          src="/src/Images/Publicimages/pandus.jpg"
+          src={imgUrl}
           alt="Photo of ramp"
         />
       </AspectRatio>

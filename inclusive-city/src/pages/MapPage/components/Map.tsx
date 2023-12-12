@@ -1,5 +1,5 @@
 import { MapContainer } from "react-leaflet/MapContainer";
-import { TileLayer, useMap } from "react-leaflet";
+import { Popup, TileLayer, useMap, Marker } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { useEffect } from "react";
 
@@ -31,6 +31,11 @@ export const Map = ({location} : props) => {
       url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
     />
     <Recenter  lat={location.latitude} lng={location.longitude}/>
+    <Marker position={[location.latitude, location.longitude]}>
+    <Popup>
+    	Los Angeles
+    </Popup>
+</Marker>
     </MapContainer>
     </div>
     );
