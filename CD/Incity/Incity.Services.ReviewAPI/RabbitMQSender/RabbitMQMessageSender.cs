@@ -8,26 +8,26 @@ namespace Incity.Services.ReviewAPI.RabbitMQSender
 {
     public class RabbitMQMessageSender : IRabbitMQMessageSender
     {
-        private readonly IRabbitMQConfiguration _rabbitMQConfiguration;
+        private readonly IRabbitMQConfiguration _configuration;
         private IConnection _connection;
 
         public RabbitMQMessageSender(IRabbitMQConfiguration rabbitMQConfiguration)
         {
-            _rabbitMQConfiguration = rabbitMQConfiguration;
+            _configuration = rabbitMQConfiguration;
         }
 
-        public void SendMessage(StructureRatingDto message, string queueName)
+        public void SendMessage(StructureRatingDto message)
         {
             if (ConnectionExists())
             {
                 using var channel = _connection.CreateModel();
 
-                channel.QueueDeclare(queue: queueName, false, false, false, arguments: null);
+                channel.QueueDeclare(queue: _configuration.QueueName, true, false, false, arguments: null);
 
                 var json = JsonConvert.SerializeObject(message);
                 var body = Encoding.UTF8.GetBytes(json);
 
-                channel.BasicPublish(exchange: "", routingKey: queueName, basicProperties: null, body: body);
+                channel.BasicPublish(exchange: "", routingKey: _configuration.QueueName, basicProperties: null, body: body);
             }
         }
 
@@ -49,9 +49,9 @@ namespace Incity.Services.ReviewAPI.RabbitMQSender
             {
                 var factory = new ConnectionFactory
                 {
-                    HostName = _rabbitMQConfiguration.Hostname,
-                    Password = _rabbitMQConfiguration.Password,
-                    UserName = _rabbitMQConfiguration.Username,
+                    HostName = _configuration.Hostname,
+                    Password = _configuration.Password,
+                    UserName = _configuration.Username,
                 };
 
                 _connection = factory.CreateConnection();

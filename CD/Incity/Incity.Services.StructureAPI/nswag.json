@@ -1,4 +1,4 @@
-﻿{
+{
   "runtime": "Net70",
   "documentGenerator": {
     "webApiToOpenApi": {
@@ -116,7 +116,9 @@
       "serviceHost": null,
       "serviceSchemes": null,
       "output": "structureApi.ts",
-      "newLineBehavior": "Auto"
+      "newLineBehavior": "Auto",
+      "useFormData": true,
+      "formDataType": "FormData"
     }
   }
 }

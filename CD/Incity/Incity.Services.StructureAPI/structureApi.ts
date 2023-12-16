@@ -38,6 +38,9 @@ export class CategoryClient extends ApiBase {
         this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
     }
 
+    /**
+     * Get all categories
+     */
     get(): Promise<Category[]> {
         let url_ = this.baseUrl + "/api/Category";
         url_ = url_.replace(/[?&]$/, "");
@@ -85,6 +88,13 @@ export class StructureClient extends ApiBase {
         this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
     }
 
+    /**
+     * Retrieves all structures
+     * @param latitude current latitude
+     * @param longitude current longitude
+     * @param count quantity of the nearest structures to return. if 0 returns all
+     * @param category category to filter structures if neccessary
+     */
     getAllStructures(latitude: number, longitude: number, count: number, category: string | null): Promise<GetStructureDto[]> {
         let url_ = this.baseUrl + "/api/Structure?";
         if (latitude === undefined || latitude === null)
@@ -136,6 +146,10 @@ export class StructureClient extends ApiBase {
         return Promise.resolve<GetStructureDto[]>(null as any);
     }
 
+    /**
+     * Creates new structure
+     * @param dto (optional) dto of structure to create
+     */
     createStructure(dto: StructureDto | undefined): Promise<GetStructureDto> {
         let url_ = this.baseUrl + "/api/Structure";
         url_ = url_.replace(/[?&]$/, "");
@@ -178,6 +192,10 @@ export class StructureClient extends ApiBase {
         return Promise.resolve<GetStructureDto>(null as any);
     }
 
+    /**
+     * Updates new structure
+     * @param dto (optional) dto of structure to update
+     */
     updateStructure(dto: StructureDto | undefined): Promise<GetStructureDto> {
         let url_ = this.baseUrl + "/api/Structure";
         url_ = url_.replace(/[?&]$/, "");
@@ -220,6 +238,12 @@ export class StructureClient extends ApiBase {
         return Promise.resolve<GetStructureDto>(null as any);
     }
 
+    /**
+     * Retrieves structure by id
+     * @param id id of structure
+     * @param latitude current latitude
+     * @param longitude current longitude
+     */
     getStructure(id: string, latitude: number, longitude: number): Promise<GetStructureDto> {
         let url_ = this.baseUrl + "/api/Structure/{id}?";
         if (id === undefined || id === null)
@@ -266,6 +290,10 @@ export class StructureClient extends ApiBase {
         return Promise.resolve<GetStructureDto>(null as any);
     }
 
+    /**
+     * delete structure
+     * @param id id of structure to delete
+     */
     deleteStructure(id: string): Promise<void> {
         let url_ = this.baseUrl + "/api/Structure/{id}";
         if (id === undefined || id === null)

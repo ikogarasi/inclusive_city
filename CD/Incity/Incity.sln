@@ -5,7 +5,7 @@ VisualStudioVersion = 17.6.33815.320
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Incity.Services.AuthAPI", "Incity.Services.AuthAPI\Incity.Services.AuthAPI.csproj", "{99026770-8B0B-4975-9762-585CE76642C6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Incity.Services.StructureAPI", "Incity.Services.MapAPI\Incity.Services.StructureAPI.csproj", "{E25BB8C7-5784-4A40-A6AE-13E74BCAB763}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Incity.Services.StructureAPI", "Incity.Services.StructureAPI\Incity.Services.StructureAPI.csproj", "{E25BB8C7-5784-4A40-A6AE-13E74BCAB763}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Incity.Gateway", "Incity.Gateway\Incity.Gateway.csproj", "{64B67B9D-2BE9-4585-913B-267ABB74E633}"
 EndProject
@@ -13,7 +13,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Incity.Services.ReviewAPI",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureBlobStorage", "AzureBlobStorage\AzureBlobStorage.csproj", "{5A7DE72B-E327-4ECE-8C9B-9C3F6990FDFC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Incity.Services.QuestionsAPI", "Incity.Services.QuestionsAPI\Incity.Services.QuestionsAPI.csproj", "{7A5FCBB0-B502-46C4-9BAE-449B08ADC5E9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Incity.Services.QuestionsAPI", "Incity.Services.QuestionsAPI\Incity.Services.QuestionsAPI.csproj", "{7A5FCBB0-B502-46C4-9BAE-449B08ADC5E9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E31044CF-2B11-4AAE-8988-C5096167BEC0}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -18,6 +18,9 @@ namespace Incity.Services.StructureAPI.Controllers
             _structureDbContext = structureDbContext;
         }
 
+        /// <summary>
+        /// Get all categories
+        /// </summary>
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<Category>), 200)]
         public async Task<IActionResult> Get()

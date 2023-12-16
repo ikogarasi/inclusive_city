@@ -47,19 +47,28 @@ namespace Incity.Services.StructureAPI.Services
 
         private static double DistanceTo(LocationDto location, GetStructureDto target)
         {
+            // Конвертація широти та довготи в радіани
             var baseRadian = Math.PI * location.Latitude / 180;
             var targetRadian = Math.PI * target.Latitude / 180;
+
+            // Розрахунок різниці у довготі (theta)
             var theta = location.Longitude - target.Longitude;
             var thetaRadian = Math.PI * theta / 180;
 
+            // Використання гаверсинуса для обчислення відстані на сфері
             var distance = Math.Sin(baseRadian) * Math.Sin(targetRadian) + Math.Cos(baseRadian) *
                 Math.Cos(targetRadian) * Math.Cos(thetaRadian);
 
+            // Обернення результату гаверсинуса, отримання відстані в радіанах
             distance = Math.Acos(distance);
 
+            // Переведення відстані з радіан у градуси
             distance = distance * 180 / Math.PI;
+
+            // Конвертація відстані в морські милі (1.1515), кілометри (1.60934)
             distance = distance * 60 * 1.1515 * 1.60934;
 
+            // Повернення обчисленої відстані
             return distance;
         }
     }

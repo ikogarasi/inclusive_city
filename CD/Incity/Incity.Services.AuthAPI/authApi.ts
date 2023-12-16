@@ -38,6 +38,9 @@ export class UserClient extends ApiBase {
         this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
     }
 
+    /**
+     * Retrieves information about all users to admin
+     */
     getUserForAdministration(): Promise<UserForAdministrationDto[]> {
         let url_ = this.baseUrl + "/api/User/UsersForAdministration";
         url_ = url_.replace(/[?&]$/, "");
@@ -73,6 +76,10 @@ export class UserClient extends ApiBase {
         return Promise.resolve<UserForAdministrationDto[]>(null as any);
     }
 
+    /**
+     * Login user
+     * @param dto (optional) user data
+     */
     login(dto: LoginDto | undefined): Promise<TokenDto> {
         let url_ = this.baseUrl + "/api/User/Login";
         url_ = url_.replace(/[?&]$/, "");
@@ -112,6 +119,10 @@ export class UserClient extends ApiBase {
         return Promise.resolve<TokenDto>(null as any);
     }
 
+    /**
+     * Register user
+     * @param dto (optional) register data
+     */
     register(dto: RegisterDto | undefined): Promise<void> {
         let url_ = this.baseUrl + "/api/User/Register";
         url_ = url_.replace(/[?&]$/, "");
@@ -148,6 +159,10 @@ export class UserClient extends ApiBase {
         return Promise.resolve<void>(null as any);
     }
 
+    /**
+     * refresh access token
+     * @param dto (optional) tokenDto
+     */
     refreshToken(dto: TokenDto | undefined): Promise<TokenDto> {
         let url_ = this.baseUrl + "/api/User/Refresh-Token";
         url_ = url_.replace(/[?&]$/, "");
@@ -187,6 +202,10 @@ export class UserClient extends ApiBase {
         return Promise.resolve<TokenDto>(null as any);
     }
 
+    /**
+     * Edit user data
+     * @param dto (optional) userdata
+     */
     edit(dto: EditDto | undefined): Promise<IncityUser> {
         let url_ = this.baseUrl + "/api/User/Edit";
         url_ = url_.replace(/[?&]$/, "");

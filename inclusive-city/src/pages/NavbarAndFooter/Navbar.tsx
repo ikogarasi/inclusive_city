@@ -12,6 +12,9 @@ import { useState } from "react";
 import { ThemeProvider, useTheme } from "@mui/material/styles";
 import MenuIcon from "@mui/icons-material/Menu";
 import { HeaderDrawer } from "./components/HeaderDrawer";
+import { useNavigate } from "react-router-dom";
+import { useAppDispatch, useAppSelector } from "../../app/hooks";
+import { cleanUser } from "../../api/userSlice";
 
 export const Navbar = () => {
   const greenTheme = createTheme({
@@ -26,18 +29,25 @@ export const Navbar = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [isMenuOpened, setIsMenuOpened] = useState(false);
+  const navigate = useNavigate();
+  const userData = useAppSelector((state) => state.user);
+  const dispatch = useAppDispatch();
 
   return (
-    <Box sx={{display: 'flex', paddingBottom: 7}}>
+    <Box sx={{ display: "flex", paddingBottom: 7 }}>
       <ThemeProvider theme={greenTheme}>
         <AppBar
           position="absolute"
           sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
         >
           <Toolbar>
-              <Typography variant="h6" color="common.white" sx={{ my: 2, fontSize: 22, flexGrow: 1  }}>
-                InCity
-              </Typography>
+            <Typography
+              variant="h6"
+              color="common.white"
+              sx={{ my: 2, fontSize: 22, flexGrow: 1, paddingRight: 2 }}
+            >
+              InCity
+            </Typography>
             {isMobile ? (
               <Box>
                 <IconButton
@@ -51,42 +61,70 @@ export const Navbar = () => {
                 </IconButton>
               </Box>
             ) : (
-              <Box sx={{
-                display: "flex",
-                flexDirection: "row",
-              }}>
               <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  width: "100%",
+                }}
               >
-                <Button
-                  href="/"
-                  sx={{
-                    color: "#fff",
-                    fontSize: 18,
-                    textTransform: "none",
-                  }}
-                >
-                  Home
-                </Button>
-                <Button
-                  href="/map"
-                  sx={{
-                    color: "#fff",
-                    fontSize: 18,
-                    textTransform: "none",
-                  }}
-                >
-                  Map
-                </Button>
-              </Box>
-              <Box >
-              <Button
-                  href="/login"
-                  variant="contained"
-                  sx={{ color: "#fff" }}
-                >
-                  Login
-                </Button>
-              </Box>
+                <Box>
+                  <Button
+                    onClick={() => navigate("/")}
+                    sx={{
+                      color: "#fff",
+                      fontSize: 18,
+                      textTransform: "none",
+                    }}
+                  >
+                    Home
+                  </Button>
+                  <Button
+                    onClick={() => navigate("/map")}
+                    sx={{
+                      color: "#fff",
+                      fontSize: 18,
+                      textTransform: "none",
+                    }}
+                  >
+                    Map
+                  </Button>
+                  {userData.userData.role === "Admin" && (
+                    <Button
+                      onClick={() => navigate("/admin")}
+                      sx={{
+                        color: "#fff",
+                        fontSize: 18,
+                        textTransform: "none",
+                      }}
+                    >
+                      Admin
+                    </Button>
+                  )}
+                </Box>
+                <Box>
+                  {!userData.isAuthenticated ? (
+                    <Button
+                      onClick={() => navigate("/login")}
+                      variant="contained"
+                      sx={{ color: "#fff" }}
+                    >
+                      Login
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={() => {
+                        dispatch(cleanUser());
+                        navigate("/login");
+                      }}
+                      variant="contained"
+                      sx={{ color: "#fff" }}
+                    >
+                      Log out
+                    </Button>
+                  )}
+                </Box>
               </Box>
             )}
           </Toolbar>

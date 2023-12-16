@@ -4,6 +4,6 @@ namespace Incity.Services.ReviewAPI.RabbitMQSender
 {
     public interface IRabbitMQMessageSender
     {
-        void SendMessage(StructureRatingDto message, string queueName);
+        void SendMessage(StructureRatingDto message);
     }
 }

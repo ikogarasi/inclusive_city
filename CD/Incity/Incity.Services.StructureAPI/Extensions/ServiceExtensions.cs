@@ -12,6 +12,7 @@ using Microsoft.IdentityModel.Tokens;
 using NSwag.Generation.Processors.Security;
 using NSwag;
 using System.Text;
+using System.Reflection;
 
 namespace Incity.Services.StructureAPI.Extensions
 {

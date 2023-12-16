@@ -68,13 +68,13 @@ export const structureRtkApi = createApi({
       },
       invalidatesTags: ["Structure"],
     }),
-    deleteStructure: build.query<void, string>({
+    deleteStructure: build.mutation<void, string>({
       queryFn: async (id: string) => {
         return {
           data: await structureClient.deleteStructure(id),
         };
       },
-      providesTags: ["Structure"],
+      invalidatesTags: ["Structure"],
     }),
     getAllCategories: build.query<Category[], void>({
       queryFn: async () => {
@@ -89,7 +89,7 @@ export const structureRtkApi = createApi({
 
 export const {
   useCreateStructureMutation,
-  useDeleteStructureQuery,
+  useDeleteStructureMutation,
   useGetAllCategoriesQuery,
   useGetAllStructuresQuery,
   useGetStructureQuery,

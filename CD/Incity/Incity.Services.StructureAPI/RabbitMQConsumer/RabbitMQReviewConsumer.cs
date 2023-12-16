@@ -1,12 +1,10 @@
 ﻿using Incity.Services.StructureAPI.Configuration;
 using Incity.Services.StructureAPI.Messages;
 using Incity.Services.StructureAPI.Repository;
-using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text;
-using System.Text.Json.Serialization;
 
 namespace Incity.Services.StructureAPI.RabbitMQConsumer
 {
@@ -16,8 +14,6 @@ namespace Incity.Services.StructureAPI.RabbitMQConsumer
         private readonly IRabbitMQConfiguration _configuration;
         private readonly IConnection _connection;
         private readonly IModel _channel;
-
-        private const string QueueName = "structureRatingQueue";
 
         public RabbitMQReviewConsumer(IServiceProvider serviceProvider, IRabbitMQConfiguration configuration)
         {
@@ -33,7 +29,7 @@ namespace Incity.Services.StructureAPI.RabbitMQConsumer
 
             _connection = factory.CreateConnection();
             _channel = _connection.CreateModel();
-            _channel.QueueDeclare(queue: QueueName, false, false, false, arguments: null);
+            _channel.QueueDeclare(queue: _configuration.QueueName, true, false, false, arguments: null);
         }
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
@@ -57,7 +53,14 @@ namespace Incity.Services.StructureAPI.RabbitMQConsumer
                 _channel.BasicAck(ea.DeliveryTag, false);
             };
 
-            _channel.BasicConsume(QueueName, false, consumer);
+            try
+            {
+                _channel.BasicConsume(_configuration.QueueName, false, consumer);
+            }
+            catch
+            {
+                Console.WriteLine("RabbitMQ went down");
+            }
 
             return Task.CompletedTask;
         }

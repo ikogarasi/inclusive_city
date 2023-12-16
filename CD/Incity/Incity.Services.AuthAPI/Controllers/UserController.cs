@@ -25,6 +25,9 @@ namespace Incity.Services.AuthAPI.Controllers
             _configuration = configuration;
         }
 
+        /// <summary>
+        /// Retrieves information about all users to admin
+        /// </summary>
         [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
         [HttpGet("UsersForAdministration")]
         [ProducesResponseType(typeof(IEnumerable<UserForAdministrationDto>), 200)]
@@ -34,7 +37,11 @@ namespace Incity.Services.AuthAPI.Controllers
 
             return Ok(result);
         }
-
+        
+        /// <summary>
+        /// Login user
+        /// </summary>
+        /// <param name="dto">user data</param>
         [HttpPost("Login")]
         [ProducesResponseType(typeof(TokenDto), 200)]
         public async Task<IActionResult> Login([FromBody] LoginDto dto)
@@ -60,7 +67,11 @@ namespace Incity.Services.AuthAPI.Controllers
 
             return Unauthorized();
         }
-
+        
+        /// <summary>
+        /// Register user
+        /// </summary>
+        /// <param name="dto">register data</param>
         [HttpPost("Register")]
         [ProducesResponseType(typeof(void), 200)]
         public async Task<IActionResult> Register([FromBody] RegisterDto dto)
@@ -81,7 +92,11 @@ namespace Incity.Services.AuthAPI.Controllers
 
             return Ok();
         }
-
+        
+        /// <summary>
+        /// refresh access token
+        /// </summary>
+        /// <param name="dto">tokenDto</param>
         [HttpPost("Refresh-Token")]
         [ProducesResponseType(typeof(TokenDto), 200)]
         public async Task<IActionResult> RefreshToken([FromBody] TokenDto dto)
@@ -116,6 +131,10 @@ namespace Incity.Services.AuthAPI.Controllers
             ));
         }
 
+        /// <summary>
+        /// Edit user data
+        /// </summary>
+        /// <param name="dto">userdata</param>
         [Authorize(AuthenticationSchemes = "Bearer")]
         [HttpPost("Edit")]
         [ProducesResponseType(typeof(IncityUser), 200)]

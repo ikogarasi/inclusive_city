@@ -4,6 +4,8 @@
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <UserSecretsId>c3222401-bf4f-4051-a1e1-c4b6f5c221ea</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,6 +13,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.11" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.8" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.11" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.5" />
     <PackageReference Include="NSwag.Annotations" Version="13.20.0" />
     <PackageReference Include="NSwag.AspNetCore" Version="13.20.0" />
     <PackageReference Include="NSwag.MSBuild" Version="13.20.0">
@@ -19,12 +22,12 @@
     </PackageReference>
   </ItemGroup>
 
+  <Target Name="NSwag" AfterTargets="Build"  Condition="'$(Configuration)' == 'Development'">
+    <Exec Command="nswag run nswag.json"/>
+  </Target>
+
   <ItemGroup>
     <Folder Include="Files\" />
   </ItemGroup>
 
-  <Target Name="NSwag" BeforeTargets="Build">
-    <Exec Command="nswag run nswag.json" LogStandardErrorAsError="true" />
-  </Target>
-  
 </Project>

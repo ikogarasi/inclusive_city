@@ -41,7 +41,7 @@ namespace Incity.Services.ReviewAPI.Services
 
             var structureAverageRating = await CalculateRating(dto.StructureId);
 
-            _rabbitMQSender.SendMessage(structureAverageRating, "structureRatingQueue");
+            _rabbitMQSender.SendMessage(structureAverageRating);
 
             return review;
         }
@@ -57,7 +57,7 @@ namespace Incity.Services.ReviewAPI.Services
 
             var structureAverageRating = await CalculateRating(reviewFromDb.StructureId);
 
-            _rabbitMQSender.SendMessage(structureAverageRating, "structureRatingQueue");
+            _rabbitMQSender.SendMessage(structureAverageRating);
         }
 
         private async Task<StructureRatingDto?> CalculateRating(Guid structureId)

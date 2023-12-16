@@ -2,25 +2,33 @@ using Incity.Gateway.Extensions;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 
-var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddCors(options =>
+internal class Program
 {
-    options.AddPolicy("CorsAllowed", policy =>
+    public static async Task Main(string[] args)
     {
-        policy.AllowAnyOrigin()
-            .AllowAnyMethod()
-            .AllowAnyHeader();
-    });
-});
+        var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddOcelot();
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("CorsAllowed", policy =>
+            {
+                policy.AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader();
+            });
+        });
 
-builder.Services.ConfigureJwt(builder.Configuration);
+        builder.Configuration.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
 
-var app = builder.Build();
+        builder.Services.AddOcelot();
 
-app.UseCors("CorsAllowed");
-await app.UseOcelot();
+        builder.Services.ConfigureJwt(builder.Configuration);
 
-app.Run();
+        var app = builder.Build();
+
+        app.UseCors("CorsAllowed");
+        await app.UseOcelot();
+
+        app.Run();
+    }
+}

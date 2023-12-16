@@ -1,9 +1,8 @@
-import * as React from 'react';
-import MenuButton from '@mui/joy/MenuButton';
-import Menu from '@mui/joy/Menu';
-import MenuItem from '@mui/joy/MenuItem';
-import ArrowDropDown from '@mui/icons-material/ArrowDropDown';
-import Dropdown from '@mui/joy/Dropdown';
+import MenuButton from "@mui/joy/MenuButton";
+import Menu from "@mui/joy/Menu";
+import MenuItem from "@mui/joy/MenuItem";
+import ArrowDropDown from "@mui/icons-material/ArrowDropDown";
+import Dropdown from "@mui/joy/Dropdown";
 
 export default function OrderBy() {
   return (
@@ -12,13 +11,12 @@ export default function OrderBy() {
         variant="plain"
         color="primary"
         endDecorator={<ArrowDropDown />}
-        sx={{ whiteSpace: 'nowrap' }}
+        sx={{ whiteSpace: "nowrap" }}
       >
         Order by
       </MenuButton>
       <Menu sx={{ minWidth: 120 }}>
-        <MenuItem>Duration</MenuItem>
-        <MenuItem>Date</MenuItem>
+        <MenuItem>Distance</MenuItem>
         <MenuItem>Rating</MenuItem>
       </Menu>
     </Dropdown>

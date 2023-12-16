@@ -4,11 +4,14 @@
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <UserSecretsId>a2fa1fb5-0927-4c7e-bcd4-cfa986ee52b7</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.13" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.8" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.5" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.11" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.11" />
@@ -20,8 +23,8 @@
     </PackageReference>
   </ItemGroup>
 
-  <Target Name="NSwag" BeforeTargets="Build">
-    <Exec Command="nswag run nswag.json" LogStandardErrorAsError="true" />
+  <Target Name="NSwag" BeforeTargets="Build"  Condition="'$(Configuration)' == 'Development'">
+    <Exec Command="nswag run nswag.json" LogStandardErrorAsError="true"/>
   </Target>
 
 </Project>

@@ -1,0 +1,252 @@
+version: '3.4'
+
+networks:
+  backend:
+    driver: bridge
+  auth: 
+    driver: bridge
+  structure:
+    driver: bridge
+  review:
+    driver: bridge
+  questions:
+    driver: bridge
+  rabbitmq:
+    driver: bridge
+
+services:
+  # Ocelot
+  incityocelot:
+    container_name: Incity_Gateway
+    image: ${DOCKER_REGISTRY-}incity_gateway
+    build:
+      context: .
+      dockerfile: Build/Gateway.Dockerfile
+      args:
+        - OcelotConfigPath=./ocelot.json
+    ports:
+      - ${OCELOT_HTTP_PORT}:80
+      - ${OCELOT_HTTPS_PORT}:443
+    environment:
+      - IdentityConfiguration__IdentityIssuer=${IDENTITY_ISSUER}
+      - IdentityConfiguration__IdentityAudience=${IDENTITY_AUDIENCE}
+      - IdentityConfiguration__IdentitySecret=${IDENTITY_SECRET}
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+;https://+
+      - ASPNETCORE_HTTPS_PORT=${OCELOT_HTTPS_PORT}
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=${CERTIFICATE_PASSWORD} 
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/app/certificates/${CERTIFICATE_NAME}
+    depends_on:
+      - incity.auth
+      - incity.structure
+      - incity.review
+      - incity.questions
+    networks:
+      - backend
+    volumes:
+      - ${CERTIFICATE_PATH}:/app/certificates
+
+  # Auth API
+  incity.auth:
+    container_name: Incity_Auth
+    image: ${DOCKER_REGISTRY-}incity_auth
+    build:
+      context: .
+      dockerfile: Build/Auth.Dockerfile
+    depends_on:
+      - incity_auth_db
+    ports:
+      - ${AUTH_HTTP_PORT}:80
+      - ${AUTH_HTTPS_PORT}:443
+    environment:
+      - ConnectionStrings__DefaultConnection=Data Source=Incity_Auth_db;User ID=sa;Password=${AUTH_DB_PASSWORD};Initial Catalog=Incity;MultipleActiveResultSets=true;TrustServerCertificate=true
+      - IdentityConfiguration__IdentityIssuer=${IDENTITY_ISSUER}
+      - IdentityConfiguration__IdentityAudience=${IDENTITY_AUDIENCE}
+      - IdentityConfiguration__IdentitySecret=${IDENTITY_SECRET}
+      - IdentityConfiguration__DurationInMinutes=${IDENTITY_DURATION_IN_MINUTES}
+      - IdentityConfiguration__RefreshTokenDurationInDays=${IDENTITY_REFRESH_DURATION_IN_DAYS}
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+;https://+
+      - ASPNETCORE_HTTPS_PORT=${AUTH_HTTPS_PORT}
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=${CERTIFICATE_PASSWORD} 
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/app/certificates/${CERTIFICATE_NAME}
+    networks:
+      - backend
+      - auth
+    volumes:
+      - ${CERTIFICATE_PATH}:/app/certificates
+
+  # Auth API Db
+  incity_auth_db:
+    container_name: Incity_Auth_db
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    ports:
+      - 1400:1433
+    restart: always
+    environment:
+      - SA_PASSWORD=${AUTH_DB_PASSWORD}
+      - ACCEPT_EULA=Y
+    volumes:
+      - db_data:/var/lib/mssql/data
+    networks:
+      - auth
+
+  # Structure API
+  incity.structure:
+    container_name: Incity_Structure
+    image: ${DOCKER_REGISTRY-}incity_structure
+    restart: always
+    build:
+      context: .
+      dockerfile: Build/Structure.Dockerfile
+    depends_on:
+      - incity_structure_db
+      - rabbitmq
+    ports:
+      - ${STRUCTURE_HTTP_PORT}:80
+      - ${STRUCTURE_HTTPS_PORT}:443
+    environment:
+      - ConnectionStrings__DefaultConnection=Data Source=Incity_Structure_db;User ID=sa;Password=${STRUCTURE_DB_PASSWORD};Initial Catalog=Incity;MultipleActiveResultSets=true;TrustServerCertificate=true
+      - IdentityConfiguration__IdentityIssuer=${IDENTITY_ISSUER}
+      - IdentityConfiguration__IdentityAudience=${IDENTITY_AUDIENCE}
+      - IdentityConfiguration__IdentitySecret=${IDENTITY_SECRET}
+      - RabbitMQConfiguration__QueueName=${RABBITMQ_QUEUE_NAME}
+      - RabbitMQConfiguration__Hostname=${RABBITMQ_HOSTNAME}
+      - RabbitMQConfiguration__Password=${RABBITMQ_PASSWORD}
+      - RabbitMQConfiguration__Username=${RABBITMQ_USERNAME}
+      - BlobConnectionString=${BLOB_CONNECTION_STRING}
+      - BlobContainerName=${BLOB_CONTAINER}
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+;https://+
+      - ASPNETCORE_HTTPS_PORT=${STRUCTURE_HTTPS_PORT} 
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=${CERTIFICATE_PASSWORD} 
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/app/certificates/${CERTIFICATE_NAME}
+    networks:
+      - backend
+      - structure
+      - rabbitmq
+    volumes:
+      - ${CERTIFICATE_PATH}:/app/certificates
+
+  # Structure API Db
+  incity_structure_db:
+    container_name: Incity_Structure_db
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    ports:
+      - 1401:1433
+    restart: always
+    environment:
+      - SA_PASSWORD=${STRUCTURE_DB_PASSWORD}
+      - ACCEPT_EULA=Y
+    volumes:
+      - db_data:/var/lib/mssql/data
+    networks:
+      - structure
+  
+  # Review API
+  incity.review:
+    container_name: Incity_Review
+    image: ${DOCKER_REGISTRY-}incity_review
+    build:
+      context: .
+      dockerfile: Build/Review.Dockerfile
+    depends_on:
+      - incity_review_db
+      - rabbitmq
+    ports:
+      - ${REVIEW_HTTP_PORT}:80
+      - ${REVIEW_HTTPS_PORT}:443
+    environment:
+      - ConnectionStrings__DefaultConnection=Data Source=Incity_Review_db;User ID=sa;Password=${REVIEW_DB_PASSWORD};Initial Catalog=Incity;MultipleActiveResultSets=true;TrustServerCertificate=true
+      - IdentityConfiguration__IdentityIssuer=${IDENTITY_ISSUER}
+      - IdentityConfiguration__IdentityAudience=${IDENTITY_AUDIENCE}
+      - IdentityConfiguration__IdentitySecret=${IDENTITY_SECRET}
+      - RabbitMQConfiguration__QueueName=${RABBITMQ_QUEUE_NAME}
+      - RabbitMQConfiguration__Hostname=${RABBITMQ_HOSTNAME}
+      - RabbitMQConfiguration__Password=${RABBITMQ_PASSWORD}
+      - RabbitMQConfiguration__Username=${RABBITMQ_USERNAME}
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+;https://+
+      - ASPNETCORE_HTTPS_PORT=${REVIEW_HTTPS_PORT} 
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=${CERTIFICATE_PASSWORD} 
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/app/certificates/${CERTIFICATE_NAME}
+    networks:
+      - backend
+      - review
+      - rabbitmq
+    volumes:
+      - ${CERTIFICATE_PATH}:/app/certificates
+
+  # Review API Db
+  incity_review_db:
+    container_name: Incity_Review_db
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    ports:
+      - 1402:1433
+    restart: always
+    environment:
+      - SA_PASSWORD=${REVIEW_DB_PASSWORD}
+      - ACCEPT_EULA=Y
+    volumes:
+      - db_data:/var/lib/mssql/data
+    networks:
+      - review
+
+  # Questions API
+  incity.questions:
+    container_name: Incity_Questions
+    image: ${DOCKER_REGISTRY-}incity_questions
+    build:
+      context: .
+      dockerfile: Build/Questions.Dockerfile
+    depends_on:
+      - incity_questions_db
+    ports:
+      - ${QUESTIONS_HTTP_PORT}:80
+      - ${QUESTIONS_HTTPS_PORT}:443
+    environment:
+      - ConnectionStrings__DefaultConnection=Data Source=Incity_Questions_db;User ID=sa;Password=${QUESTIONS_DB_PASSWORD};Initial Catalog=Incity;MultipleActiveResultSets=true;TrustServerCertificate=true
+      - IdentityConfiguration__IdentityIssuer=${IDENTITY_ISSUER}
+      - IdentityConfiguration__IdentityAudience=${IDENTITY_AUDIENCE}
+      - IdentityConfiguration__IdentitySecret=${IDENTITY_SECRET}
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+;https://+
+      - ASPNETCORE_HTTPS_PORT=${QUESTIONS_HTTPS_PORT} 
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=${CERTIFICATE_PASSWORD} 
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/app/certificates/${CERTIFICATE_NAME}
+    networks:
+      - backend
+      - questions
+    volumes:
+      - ${CERTIFICATE_PATH}:/app/certificates
+
+  # Questions API Db
+  incity_questions_db:
+    container_name: Incity_Questions_db
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    ports:
+      - 1403:1433
+    restart: always
+    environment:
+      - SA_PASSWORD=${QUESTIONS_DB_PASSWORD}
+      - ACCEPT_EULA=Y
+    volumes:
+      - db_data:/var/lib/mssql/data
+    networks:
+      - questions
+
+  # RabbitMQ
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USERNAME}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
+    ports:
+      - "5555:5672"
+      - "15555:15672"
+    networks:
+      - rabbitmq
+
+volumes:
+  db_data:
