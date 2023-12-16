@@ -4,9 +4,10 @@ import Card from "@mui/joy/Card"
 import CardContent from "@mui/joy/CardContent"
 import CardCover from "@mui/joy/CardCover"
 import Typography from "@mui/joy/Typography"
+import { useNavigate } from "react-router-dom"
 
 export const CardCity = () => {
-
+  const navigate = useNavigate();
 return( 
 <Box
     component="ul"
@@ -49,6 +50,7 @@ return(
         <Button 
         color="success"
         size="lg"
+        onClick={() => { navigate('/map')}}
         sx={{ 
           color: '#fff', 
           fontSize: 22, 

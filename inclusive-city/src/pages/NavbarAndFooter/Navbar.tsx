@@ -102,6 +102,18 @@ export const Navbar = () => {
                       Admin
                     </Button>
                   )}
+                  {userData.userData.role === "User" && (
+                    <Button
+                      onClick={() => navigate("/message")}
+                      sx={{
+                        color: "#fff",
+                        fontSize: 18,
+                        textTransform: "none",
+                      }}
+                    >
+                      Q/A
+                    </Button>
+                  )}
                 </Box>
                 <Box>
                   {!userData.isAuthenticated ? (

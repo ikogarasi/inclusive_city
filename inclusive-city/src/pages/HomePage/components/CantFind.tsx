@@ -1,9 +1,13 @@
 import { Button } from "@mui/joy";
 import { Box, Grid, useMediaQuery, useTheme } from "@mui/material";
+import { useAppSelector } from "../../../app/hooks";
+import { useNavigate } from "react-router-dom";
 
 export const CantFind = () => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+    const userData = useAppSelector((state) => state.user);
+    const navigate = useNavigate();
     
     return(
       <>
@@ -21,7 +25,11 @@ export const CantFind = () => {
             <h1 style={{fontWeight: 'bold', fontSize: 30}}>Can`t find what you are looking for?</h1> 
             <span>Lorem ipsum dolor sit amet consectetur adipisicing elit. Nemo nobis aliquam mollitia asperiores. Velit nisi excepturi ex provident, culpa labore quaerat illo numquam itaque aspernatur reprehenderit, voluptatum et ab. Dolor. </span>   
             </Box>  
-<Button size="lg" color="success" sx={{marginTop: 2}}>Sign in</Button> 
+            {!userData.isAuthenticated ? (
+                    <Button size="lg" onClick={() => navigate("/login")} color="success" sx={{marginTop: 2}}>Sign in</Button> 
+                   ) : (
+                    <Button size="lg" onClick={() => navigate("/message")} color="success" sx={{marginTop: 2}}>Send question</Button> 
+                   )} 
 </Box> 
 </Box>  
         ) : (
@@ -38,8 +46,12 @@ export const CantFind = () => {
                    <Box sx={{display: "flex", flexDirection: 'column', gap: '0', textAlign: 'start', height: 'fit-content'}}> 
                    <h1 style={{fontWeight: 'bold', fontSize: 50}}>Can`t find what you are looking for?</h1>    
                    <span>Lorem ipsum dolor sit amet consectetur adipisicing elit. Nemo nobis aliquam mollitia asperiores. Velit nisi excepturi ex provident, culpa labore quaerat illo numquam itaque aspernatur reprehenderit, voluptatum et ab. Dolor. </span>
-                   </Box>  
-                   <Button size="lg" color="success" sx={{marginTop: 5}}>Sign in</Button> 
+                   </Box> 
+                   {!userData.isAuthenticated ? (
+                    <Button size="lg" onClick={() => navigate("/login")} color="success" sx={{marginTop: 5}}>Sign in</Button> 
+                   ) : (
+                    <Button size="lg" onClick={() => navigate("/message")} color="success" sx={{marginTop: 5}}>Send question</Button> 
+                   )} 
                    </Grid>
                    <Grid item>
                    <Box display={'flex'}
