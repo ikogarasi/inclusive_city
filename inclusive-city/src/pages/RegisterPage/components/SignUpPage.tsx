@@ -137,7 +137,7 @@ export default function SignInPage() {
                 <Typography level="h3">Sign up</Typography>
                 <Typography level="body-sm">
                   Have an account?{" "}
-                  <Link href="/login" level="title-sm">
+                  <Link onClick={() => navigate("/login")} level="title-sm">
                     Log in!
                   </Link>
                 </Typography>
@@ -186,10 +186,16 @@ export default function SignInPage() {
               {"."}
             </Typography>
             <Typography>
-              <Link href="/" sx={{ marginRight: 4, color: common.black }}>
+              <Link
+                onClick={() => navigate("/")}
+                sx={{ marginRight: 4, color: common.black }}
+              >
                 Home
               </Link>{" "}
-              <Link href="/map" sx={{ color: common.black }}>
+              <Link
+                onClick={() => navigate("/map")}
+                sx={{ color: common.black }}
+              >
                 Map
               </Link>{" "}
             </Typography>

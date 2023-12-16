@@ -19,11 +19,11 @@ export const reviewRtkApi = createApi({
       },
       invalidatesTags: ["Review"],
     }),
-    removeReview: build.query<void, string>({
+    removeReview: build.mutation<void, string>({
       queryFn: async (reviewId: string) => {
         return { data: await reviewClient.removeReview(reviewId) };
       },
-      providesTags: ["Review"],
+      invalidatesTags: ["Review"],
     }),
   }),
 });
@@ -31,7 +31,7 @@ export const reviewRtkApi = createApi({
 export const {
   useGetReviewsForStructureQuery,
   useSubmitReviewMutation,
-  useRemoveReviewQuery,
+  useRemoveReviewMutation,
 } = reviewRtkApi;
 
 export default reviewRtkApi;

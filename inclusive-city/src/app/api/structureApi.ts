@@ -9,354 +9,494 @@
 // ReSharper disable InconsistentNaming
 
 export class ApiBase {
+  private getJwtFromCookie(): string | undefined {
+    return document.cookie
+      .split("; ")
+      .find((x) => x.startsWith("API_TOKEN="))
+      ?.split("=")[1];
+  }
 
-    private getJwtFromCookie(): string | undefined {
-        return document.cookie
-            .split('; ')
-            .find((x) => x.startsWith('API_TOKEN='))
-            ?.split('=')[1];
-    }
+  protected transformOptions(options: RequestInit): Promise<RequestInit> {
+    options.headers = {
+      ...options?.headers,
+      Authorization: `Bearer ${this.getJwtFromCookie()}`,
+    };
 
-    protected transformOptions(options: RequestInit): Promise<RequestInit> {
-        options.headers = {
-            ...options?.headers,
-            Authorization: `Bearer ${this.getJwtFromCookie()}`,
-        };
-
-        return Promise.resolve(options);
-    }
+    return Promise.resolve(options);
+  }
 }
 
 export class CategoryClient extends ApiBase {
-    private http: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> };
-    private baseUrl: string;
-    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+  private http: {
+    fetch(url: RequestInfo, init?: RequestInit): Promise<Response>;
+  };
+  private baseUrl: string;
+  protected jsonParseReviver: ((key: string, value: any) => any) | undefined =
+    undefined;
 
-    constructor(baseUrl?: string, http?: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> }) {
-        super();
-        this.http = http ? http : window as any;
-        this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
+  constructor(
+    baseUrl?: string,
+    http?: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> }
+  ) {
+    super();
+    this.http = http ? http : (window as any);
+    this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
+  }
+
+  get(): Promise<Category[]> {
+    let url_ = this.baseUrl + "/api/Category";
+    url_ = url_.replace(/[?&]$/, "");
+
+    let options_: RequestInit = {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+    };
+
+    return this.transformOptions(options_)
+      .then((transformedOptions_) => {
+        return this.http.fetch(url_, transformedOptions_);
+      })
+      .then((_response: Response) => {
+        return this.processGet(_response);
+      });
+  }
+
+  protected processGet(response: Response): Promise<Category[]> {
+    const status = response.status;
+    let _headers: any = {};
+    if (response.headers && response.headers.forEach) {
+      response.headers.forEach((v: any, k: any) => (_headers[k] = v));
     }
-
-    get(): Promise<Category[]> {
-        let url_ = this.baseUrl + "/api/Category";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.transformOptions(options_).then(transformedOptions_ => {
-            return this.http.fetch(url_, transformedOptions_);
-        }).then((_response: Response) => {
-            return this.processGet(_response);
-        });
+    if (status === 200) {
+      return response.text().then((_responseText) => {
+        let result200: any = null;
+        result200 =
+          _responseText === ""
+            ? null
+            : (JSON.parse(_responseText, this.jsonParseReviver) as Category[]);
+        return result200;
+      });
+    } else if (status !== 200 && status !== 204) {
+      return response.text().then((_responseText) => {
+        return throwException(
+          "An unexpected server error occurred.",
+          status,
+          _responseText,
+          _headers
+        );
+      });
     }
-
-    protected processGet(response: Response): Promise<Category[]> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as Category[];
-            return result200;
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<Category[]>(null as any);
-    }
+    return Promise.resolve<Category[]>(null as any);
+  }
 }
 
 export class StructureClient extends ApiBase {
-    private http: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> };
-    private baseUrl: string;
-    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+  private http: {
+    fetch(url: RequestInfo, init?: RequestInit): Promise<Response>;
+  };
+  private baseUrl: string;
+  protected jsonParseReviver: ((key: string, value: any) => any) | undefined =
+    undefined;
 
-    constructor(baseUrl?: string, http?: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> }) {
-        super();
-        this.http = http ? http : window as any;
-        this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
+  constructor(
+    baseUrl?: string,
+    http?: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> }
+  ) {
+    super();
+    this.http = http ? http : (window as any);
+    this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
+  }
+
+  getAllStructures(
+    latitude: number,
+    longitude: number,
+    count: number,
+    category: string | null
+  ): Promise<GetStructureDto[]> {
+    let url_ = this.baseUrl + "/api/Structure?";
+    if (latitude === undefined || latitude === null)
+      throw new Error(
+        "The parameter 'latitude' must be defined and cannot be null."
+      );
+    else url_ += "latitude=" + encodeURIComponent("" + latitude) + "&";
+    if (longitude === undefined || longitude === null)
+      throw new Error(
+        "The parameter 'longitude' must be defined and cannot be null."
+      );
+    else url_ += "longitude=" + encodeURIComponent("" + longitude) + "&";
+    if (count === undefined || count === null)
+      throw new Error(
+        "The parameter 'count' must be defined and cannot be null."
+      );
+    else url_ += "count=" + encodeURIComponent("" + count) + "&";
+    if (category === undefined)
+      throw new Error("The parameter 'category' must be defined.");
+    else if (category !== null)
+      url_ += "category=" + encodeURIComponent("" + category) + "&";
+    url_ = url_.replace(/[?&]$/, "");
+
+    let options_: RequestInit = {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+    };
+
+    return this.transformOptions(options_)
+      .then((transformedOptions_) => {
+        return this.http.fetch(url_, transformedOptions_);
+      })
+      .then((_response: Response) => {
+        return this.processGetAllStructures(_response);
+      });
+  }
+
+  protected processGetAllStructures(
+    response: Response
+  ): Promise<GetStructureDto[]> {
+    const status = response.status;
+    let _headers: any = {};
+    if (response.headers && response.headers.forEach) {
+      response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+    }
+    if (status === 200) {
+      return response.text().then((_responseText) => {
+        let result200: any = null;
+        result200 =
+          _responseText === ""
+            ? null
+            : (JSON.parse(
+                _responseText,
+                this.jsonParseReviver
+              ) as GetStructureDto[]);
+        return result200;
+      });
+    } else if (status !== 200 && status !== 204) {
+      return response.text().then((_responseText) => {
+        return throwException(
+          "An unexpected server error occurred.",
+          status,
+          _responseText,
+          _headers
+        );
+      });
+    }
+    return Promise.resolve<GetStructureDto[]>(null as any);
+  }
+
+  createStructure(dto: StructureDto | undefined): Promise<GetStructureDto> {
+    let url_ = this.baseUrl + "/api/Structure";
+    url_ = url_.replace(/[?&]$/, "");
+
+    const content_ = new FormData();
+    if (dto === null || dto === undefined)
+      throw new Error("The parameter 'dto' cannot be null.");
+    else {
+      content_.append("Name", dto.name);
+      content_.append("Category", dto.category);
+      content_.append("Description", dto.description);
+      content_.append("Latitude", dto.latitude.toString());
+      content_.append("Longitude", dto.longitude.toString());
+      content_.append("Image", dto.image);
     }
 
-    getAllStructures(latitude: number, longitude: number, count: number, category: string | null): Promise<GetStructureDto[]> {
-        let url_ = this.baseUrl + "/api/Structure?";
-        if (latitude === undefined || latitude === null)
-            throw new Error("The parameter 'latitude' must be defined and cannot be null.");
-        else
-            url_ += "latitude=" + encodeURIComponent("" + latitude) + "&";
-        if (longitude === undefined || longitude === null)
-            throw new Error("The parameter 'longitude' must be defined and cannot be null.");
-        else
-            url_ += "longitude=" + encodeURIComponent("" + longitude) + "&";
-        if (count === undefined || count === null)
-            throw new Error("The parameter 'count' must be defined and cannot be null.");
-        else
-            url_ += "count=" + encodeURIComponent("" + count) + "&";
-        if (category === undefined)
-            throw new Error("The parameter 'category' must be defined.");
-        else if(category !== null)
-            url_ += "category=" + encodeURIComponent("" + category) + "&";
-        url_ = url_.replace(/[?&]$/, "");
+    let options_: RequestInit = {
+      body: content_,
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+      },
+    };
 
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
+    return this.transformOptions(options_)
+      .then((transformedOptions_) => {
+        return this.http.fetch(url_, transformedOptions_);
+      })
+      .then((_response: Response) => {
+        return this.processCreateStructure(_response);
+      });
+  }
 
-        return this.transformOptions(options_).then(transformedOptions_ => {
-            return this.http.fetch(url_, transformedOptions_);
-        }).then((_response: Response) => {
-            return this.processGetAllStructures(_response);
-        });
+  protected processCreateStructure(
+    response: Response
+  ): Promise<GetStructureDto> {
+    const status = response.status;
+    let _headers: any = {};
+    if (response.headers && response.headers.forEach) {
+      response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+    }
+    if (status === 200) {
+      return response.text().then((_responseText) => {
+        let result200: any = null;
+        result200 =
+          _responseText === ""
+            ? null
+            : (JSON.parse(
+                _responseText,
+                this.jsonParseReviver
+              ) as GetStructureDto);
+        return result200;
+      });
+    } else if (status !== 200 && status !== 204) {
+      return response.text().then((_responseText) => {
+        return throwException(
+          "An unexpected server error occurred.",
+          status,
+          _responseText,
+          _headers
+        );
+      });
+    }
+    return Promise.resolve<GetStructureDto>(null as any);
+  }
+
+  updateStructure(dto: StructureDto | undefined): Promise<GetStructureDto> {
+    let url_ = this.baseUrl + "/api/Structure";
+    url_ = url_.replace(/[?&]$/, "");
+
+    const content_ = new FormData();
+    if (dto === null || dto === undefined)
+      throw new Error("The parameter 'dto' cannot be null.");
+    else {
+      content_.append("Id", dto.id as string);
+      content_.append("Name", dto.name);
+      content_.append("Category", dto.category);
+      content_.append("Description", dto.description);
+      content_.append("Latitude", dto.latitude.toString());
+      content_.append("Longitude", dto.longitude.toString());
+      content_.append("Image", dto.image);
     }
 
-    protected processGetAllStructures(response: Response): Promise<GetStructureDto[]> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as GetStructureDto[];
-            return result200;
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<GetStructureDto[]>(null as any);
+    let options_: RequestInit = {
+      body: content_,
+      method: "PUT",
+      headers: {
+        Accept: "application/json",
+      },
+    };
+
+    return this.transformOptions(options_)
+      .then((transformedOptions_) => {
+        return this.http.fetch(url_, transformedOptions_);
+      })
+      .then((_response: Response) => {
+        return this.processUpdateStructure(_response);
+      });
+  }
+
+  protected processUpdateStructure(
+    response: Response
+  ): Promise<GetStructureDto> {
+    const status = response.status;
+    let _headers: any = {};
+    if (response.headers && response.headers.forEach) {
+      response.headers.forEach((v: any, k: any) => (_headers[k] = v));
     }
-
-    createStructure(dto: StructureDto | undefined): Promise<GetStructureDto> {
-        let url_ = this.baseUrl + "/api/Structure";
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = new FormData();
-        if (dto === null || dto === undefined)
-            throw new Error("The parameter 'dto' cannot be null.");
-        else
-            content_.append("dto", JSON.stringify(dto));
-
-        let options_: RequestInit = {
-            body: content_,
-            method: "POST",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.transformOptions(options_).then(transformedOptions_ => {
-            return this.http.fetch(url_, transformedOptions_);
-        }).then((_response: Response) => {
-            return this.processCreateStructure(_response);
-        });
+    if (status === 200) {
+      return response.text().then((_responseText) => {
+        let result200: any = null;
+        result200 =
+          _responseText === ""
+            ? null
+            : (JSON.parse(
+                _responseText,
+                this.jsonParseReviver
+              ) as GetStructureDto);
+        return result200;
+      });
+    } else if (status !== 200 && status !== 204) {
+      return response.text().then((_responseText) => {
+        return throwException(
+          "An unexpected server error occurred.",
+          status,
+          _responseText,
+          _headers
+        );
+      });
     }
+    return Promise.resolve<GetStructureDto>(null as any);
+  }
 
-    protected processCreateStructure(response: Response): Promise<GetStructureDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as GetStructureDto;
-            return result200;
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<GetStructureDto>(null as any);
+  getStructure(
+    id: string,
+    latitude: number,
+    longitude: number
+  ): Promise<GetStructureDto> {
+    let url_ = this.baseUrl + "/api/Structure/{id}?";
+    if (id === undefined || id === null)
+      throw new Error("The parameter 'id' must be defined.");
+    url_ = url_.replace("{id}", encodeURIComponent("" + id));
+    if (latitude === undefined || latitude === null)
+      throw new Error(
+        "The parameter 'latitude' must be defined and cannot be null."
+      );
+    else url_ += "latitude=" + encodeURIComponent("" + latitude) + "&";
+    if (longitude === undefined || longitude === null)
+      throw new Error(
+        "The parameter 'longitude' must be defined and cannot be null."
+      );
+    else url_ += "longitude=" + encodeURIComponent("" + longitude) + "&";
+    url_ = url_.replace(/[?&]$/, "");
+
+    let options_: RequestInit = {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+    };
+
+    return this.transformOptions(options_)
+      .then((transformedOptions_) => {
+        return this.http.fetch(url_, transformedOptions_);
+      })
+      .then((_response: Response) => {
+        return this.processGetStructure(_response);
+      });
+  }
+
+  protected processGetStructure(response: Response): Promise<GetStructureDto> {
+    const status = response.status;
+    let _headers: any = {};
+    if (response.headers && response.headers.forEach) {
+      response.headers.forEach((v: any, k: any) => (_headers[k] = v));
     }
-
-    updateStructure(dto: StructureDto | undefined): Promise<GetStructureDto> {
-        let url_ = this.baseUrl + "/api/Structure";
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = new FormData();
-        if (dto === null || dto === undefined)
-            throw new Error("The parameter 'dto' cannot be null.");
-        else
-            content_.append("dto", JSON.stringify(dto));
-
-        let options_: RequestInit = {
-            body: content_,
-            method: "PUT",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.transformOptions(options_).then(transformedOptions_ => {
-            return this.http.fetch(url_, transformedOptions_);
-        }).then((_response: Response) => {
-            return this.processUpdateStructure(_response);
-        });
+    if (status === 200) {
+      return response.text().then((_responseText) => {
+        let result200: any = null;
+        result200 =
+          _responseText === ""
+            ? null
+            : (JSON.parse(
+                _responseText,
+                this.jsonParseReviver
+              ) as GetStructureDto);
+        return result200;
+      });
+    } else if (status !== 200 && status !== 204) {
+      return response.text().then((_responseText) => {
+        return throwException(
+          "An unexpected server error occurred.",
+          status,
+          _responseText,
+          _headers
+        );
+      });
     }
+    return Promise.resolve<GetStructureDto>(null as any);
+  }
 
-    protected processUpdateStructure(response: Response): Promise<GetStructureDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as GetStructureDto;
-            return result200;
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<GetStructureDto>(null as any);
+  deleteStructure(id: string): Promise<void> {
+    let url_ = this.baseUrl + "/api/Structure/{id}";
+    if (id === undefined || id === null)
+      throw new Error("The parameter 'id' must be defined.");
+    url_ = url_.replace("{id}", encodeURIComponent("" + id));
+    url_ = url_.replace(/[?&]$/, "");
+
+    let options_: RequestInit = {
+      method: "DELETE",
+      headers: {},
+    };
+
+    return this.transformOptions(options_)
+      .then((transformedOptions_) => {
+        return this.http.fetch(url_, transformedOptions_);
+      })
+      .then((_response: Response) => {
+        return this.processDeleteStructure(_response);
+      });
+  }
+
+  protected processDeleteStructure(response: Response): Promise<void> {
+    const status = response.status;
+    let _headers: any = {};
+    if (response.headers && response.headers.forEach) {
+      response.headers.forEach((v: any, k: any) => (_headers[k] = v));
     }
-
-    getStructure(id: string, latitude: number, longitude: number): Promise<GetStructureDto> {
-        let url_ = this.baseUrl + "/api/Structure/{id}?";
-        if (id === undefined || id === null)
-            throw new Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        if (latitude === undefined || latitude === null)
-            throw new Error("The parameter 'latitude' must be defined and cannot be null.");
-        else
-            url_ += "latitude=" + encodeURIComponent("" + latitude) + "&";
-        if (longitude === undefined || longitude === null)
-            throw new Error("The parameter 'longitude' must be defined and cannot be null.");
-        else
-            url_ += "longitude=" + encodeURIComponent("" + longitude) + "&";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.transformOptions(options_).then(transformedOptions_ => {
-            return this.http.fetch(url_, transformedOptions_);
-        }).then((_response: Response) => {
-            return this.processGetStructure(_response);
-        });
+    if (status === 200) {
+      return response.text().then((_responseText) => {
+        return;
+      });
+    } else if (status !== 200 && status !== 204) {
+      return response.text().then((_responseText) => {
+        return throwException(
+          "An unexpected server error occurred.",
+          status,
+          _responseText,
+          _headers
+        );
+      });
     }
-
-    protected processGetStructure(response: Response): Promise<GetStructureDto> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as GetStructureDto;
-            return result200;
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<GetStructureDto>(null as any);
-    }
-
-    deleteStructure(id: string): Promise<void> {
-        let url_ = this.baseUrl + "/api/Structure/{id}";
-        if (id === undefined || id === null)
-            throw new Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "DELETE",
-            headers: {
-            }
-        };
-
-        return this.transformOptions(options_).then(transformedOptions_ => {
-            return this.http.fetch(url_, transformedOptions_);
-        }).then((_response: Response) => {
-            return this.processDeleteStructure(_response);
-        });
-    }
-
-    protected processDeleteStructure(response: Response): Promise<void> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            return;
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<void>(null as any);
-    }
+    return Promise.resolve<void>(null as any);
+  }
 }
 
 export interface Category {
-    id: string;
-    name: string;
-    normalizedName: string;
+  id: string;
+  name: string;
+  normalizedName: string;
 }
 
 export interface GetStructureDto {
-    id?: string | null;
-    name: string;
-    description: string;
-    imageUrl: string;
-    category: string;
-    latitude: number;
-    longitude: number;
-    rating: number;
-    distanceInKm?: number | null;
+  id?: string | null;
+  name: string;
+  description: string;
+  imageUrl: string;
+  category: string;
+  latitude: number;
+  longitude: number;
+  rating: number;
+  distanceInKm?: number | null;
 }
 
 export interface StructureDto {
-    id?: string | null;
-    name: string;
-    description: string;
-    image?: any | null;
-    category: string;
-    latitude: number;
-    longitude: number;
+  id?: string | null;
+  name: string;
+  description: string;
+  image?: any | null;
+  category: string;
+  latitude: number;
+  longitude: number;
 }
 
 export class ApiException extends Error {
-    override message: string;
-    status: number;
-    response: string;
-    headers: { [key: string]: any; };
-    result: any;
+  override message: string;
+  status: number;
+  response: string;
+  headers: { [key: string]: any };
+  result: any;
 
-    constructor(message: string, status: number, response: string, headers: { [key: string]: any; }, result: any) {
-        super();
+  constructor(
+    message: string,
+    status: number,
+    response: string,
+    headers: { [key: string]: any },
+    result: any
+  ) {
+    super();
 
-        this.message = message;
-        this.status = status;
-        this.response = response;
-        this.headers = headers;
-        this.result = result;
-    }
+    this.message = message;
+    this.status = status;
+    this.response = response;
+    this.headers = headers;
+    this.result = result;
+  }
 
-    protected isApiException = true;
+  protected isApiException = true;
 
-    static isApiException(obj: any): obj is ApiException {
-        return obj.isApiException === true;
-    }
+  static isApiException(obj: any): obj is ApiException {
+    return obj.isApiException === true;
+  }
 }
 
-function throwException(message: string, status: number, response: string, headers: { [key: string]: any; }, result?: any): any {
-    if (result !== null && result !== undefined)
-        throw result;
-    else
-        throw new ApiException(message, status, response, headers, null);
+function throwException(
+  message: string,
+  status: number,
+  response: string,
+  headers: { [key: string]: any },
+  result?: any
+): any {
+  if (result !== null && result !== undefined) throw result;
+  else throw new ApiException(message, status, response, headers, null);
 }

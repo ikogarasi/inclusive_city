@@ -1,8 +1,15 @@
 import { Box, Button, List, ListItem, SwipeableDrawer, Toolbar } from "@mui/material";
 import React from "react";
 import { ThemeProvider, createTheme, useTheme } from "@mui/material/styles";
+import { useAppDispatch, useAppSelector } from "../../../app/hooks";
+import { useNavigate } from "react-router-dom";
+import { cleanUser } from "../../../api/userSlice";
 
 export const HeaderDrawer = (props: { value: boolean }) => {
+
+  const userData = useAppSelector((state) => state.user);
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
     const greenTheme = createTheme({
         components: {
@@ -50,7 +57,7 @@ export const HeaderDrawer = (props: { value: boolean }) => {
         }}
       >
         <Toolbar/>
-        <Box sx={{ overflow: "auto", marginTop: 5}}>
+        <Box sx={{ overflow: "auto"}}>
           <List>
               <ListItem><Button
                     href="/"
@@ -66,15 +73,57 @@ export const HeaderDrawer = (props: { value: boolean }) => {
                     }}
                   >
                     Map
-                  </Button></ListItem>
-                  <ListItem ><Button
-                  href="/login"
-                  sx={{ color: "white", border:'white' }}
-                  variant="contained"
-                  color='success'
-                >
-                  Login
-                </Button></ListItem>
+                  </Button>
+                  </ListItem>
+                  <ListItem>
+                  {userData.userData.role === "Admin" && (
+                    <Button
+                      onClick={() => navigate("/admin")}
+                      sx={{
+                        color: "#fff",
+                        fontSize: 18,
+                        textTransform: "none",
+                      }}
+                    >
+                      Admin
+                    </Button>
+                  )}
+                   {userData.userData.role === "User" && (
+                    <Button
+                      onClick={() => navigate("/message")}
+                      sx={{
+                        color: "#fff",
+                        fontSize: 18,
+                        textTransform: "none",
+                      }}
+                    >
+                      Q/A
+                    </Button>
+                  )}
+                  </ListItem>
+                  <ListItem >
+                  {!userData.isAuthenticated ? (
+                    <Button
+                      onClick={() => navigate("/login")}
+                      variant="contained"
+                      color="success"
+                      sx={{ color: "#fff" }}
+                    >
+                      Login
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={() => {
+                        dispatch(cleanUser());
+                        navigate("/login");
+                      }}
+                      color="success"
+                      variant="contained"
+                      sx={{ color: "#fff" }}
+                    >
+                      Log out
+                    </Button>
+                  )}</ListItem>
           </List>
         </Box>
       </SwipeableDrawer>
