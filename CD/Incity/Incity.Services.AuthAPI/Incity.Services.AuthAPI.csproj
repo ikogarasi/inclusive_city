@@ -22,7 +22,7 @@
     </PackageReference>
   </ItemGroup>
 
-  <Target Name="NSwag" AfterTargets="Build"  Condition="'$(Configuration)' == 'Development'">
+  <Target Name="NSwag" AfterTargets="Build"  Condition="'$(Configuration)' == 'Debug'">
     <Exec Command="nswag run nswag.json"/>
   </Target>
 

@@ -39,7 +39,7 @@ export class QuestionClient extends ApiBase {
     }
 
     getAllQuestions(pending: boolean | undefined): Promise<Topic[]> {
-        let url_ = this.baseUrl + "/api/Question?";
+        let url_ = this.baseUrl + "/api/User/Question?";
         if (pending === null)
             throw new Error("The parameter 'pending' cannot be null.");
         else if (pending !== undefined)
@@ -78,7 +78,7 @@ export class QuestionClient extends ApiBase {
     }
 
     submitQuestion(dto: QuestionDto | undefined): Promise<Question> {
-        let url_ = this.baseUrl + "/api/Question";
+        let url_ = this.baseUrl + "/api/User/Question";
         url_ = url_.replace(/[?&]$/, "");
 
         const content_ = JSON.stringify(dto);
@@ -129,7 +129,7 @@ export class AnswerClient extends ApiBase {
     }
 
     getAllQuestions(userId: string | null | undefined, pending: boolean | undefined): Promise<Topic[]> {
-        let url_ = this.baseUrl + "/api/Answer?";
+        let url_ = this.baseUrl + "/api/Admin/Answer?";
         if (userId !== undefined && userId !== null)
             url_ += "userId=" + encodeURIComponent("" + userId) + "&";
         if (pending === null)
@@ -170,7 +170,7 @@ export class AnswerClient extends ApiBase {
     }
 
     answerQuestion(dto: AnswerDto | undefined): Promise<Topic> {
-        let url_ = this.baseUrl + "/api/Answer";
+        let url_ = this.baseUrl + "/api/Admin/Answer";
         url_ = url_.replace(/[?&]$/, "");
 
         const content_ = JSON.stringify(dto);

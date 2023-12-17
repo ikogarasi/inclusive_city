@@ -7,8 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Incity.Services.QuestionsAPI.Controllers
 {
-    [Area("Admin")]
-    [Route("api/[Area]/[controller]")]
+    [Route("api/Admin/[controller]")]
     [ApiController]
     [Authorize(Roles = "Admin")]
     public class AnswerController : ControllerBase

@@ -16,6 +16,6 @@ namespace Incity.Services.QuestionsAPI.Models
         public Question Question { get; set; }
 
         public string Text { get; set; }
-        public DateTime TimeStamp { get; set; }
+        public DateTime TimeStamp { get; set; } = DateTime.UtcNow;
     }
 }
