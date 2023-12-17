@@ -18,7 +18,9 @@ import React, { useState } from "react";
 import {
   useCreateStructureMutation,
   useGetAllCategoriesQuery,
+  useUpdateStructureMutation,
 } from "../../../api/structureRtkApi";
+import { GetStructureDto } from "../../../app/api/structureApi";
 
 interface ValidationErrors {
   name: boolean;
@@ -37,7 +39,9 @@ const regexLat = /^(-?[1-8]?\d(?:\.\d{1,18})?|90(?:\.0{1,18})?)$/;
 const regexLon = /^(-?(?:1[0-7]|[1-9])?\d(?:\.\d{1,18})?|180(?:\.0{1,18})?)$/;
 
 // перевірка чи є текст валідація
-export const AddInfoPage = () => {
+export const AddInfoPage: React.FC<{ structure?: GetStructureDto }> = (
+  props
+) => {
   const [category, setCategory] = React.useState("");
   const [newCategory, setNewCategory] = React.useState("");
   const [name, setName] = React.useState("");
@@ -48,8 +52,11 @@ export const AddInfoPage = () => {
   const [imageUrl, setImageUrl] = useState(null);
   const [imageFile, setImageFile] = useState(null);
   const [success, setSuccess] = useState("");
+
   const [addStructure] = useCreateStructureMutation();
   const { data = [] } = useGetAllCategoriesQuery();
+
+  const [updateStructure] = useUpdateStructureMutation();
 
   const handleChange = (event: SelectChangeEvent) => {
     setCategory(event.target.value);
@@ -103,15 +110,25 @@ export const AddInfoPage = () => {
     if (Object.values(validation).indexOf(true) >= 0) {
       setErrorMessage(validation);
     } else {
-      console.log("lox");
-      await addStructure({
-        name: name,
-        image: imageFile,
-        description: description,
-        category: category === "New category" ? newCategory : category,
-        latitude: Number(latitude),
-        longitude: Number(longitude),
-      });
+      if (props.structure) {
+        await updateStructure({
+          name: name,
+          image: imageFile,
+          description: description,
+          category: category === "New category" ? newCategory : category,
+          latitude: Number(latitude),
+          longitude: Number(longitude),
+        });
+      } else {
+        await addStructure({
+          name: name,
+          image: imageFile,
+          description: description,
+          category: category === "New category" ? newCategory : category,
+          latitude: Number(latitude),
+          longitude: Number(longitude),
+        });
+      }
     }
   };
 
@@ -159,6 +176,8 @@ export const AddInfoPage = () => {
 
   const [open, setOpen] = React.useState(false);
 
+  const [visible, setVisible] = useState(true);
+
   const handleClickOpen = () => {
     setOpen(true);
   };
@@ -168,187 +187,423 @@ export const AddInfoPage = () => {
   };
 
   return (
-    <Box
-      margin={5}
-      sx={{
-        display: "flex",
-        justifyContent: "space-between",
-        flexGrow: 1,
-        flexWrap: { sm: "nowrap", xs: "wrap" },
-      }}
-    >
-      <Grid container spacing={1} direction="row">
-        <Grid container item spacing={3}>
-          <Grid item sm={4}>
-            <TextField
-              helperText={errorMessage?.name ? "Please enter place name" : ""}
-              id="demo-helper-text-aligned"
-              label="Name"
-              value={name}
-              error={errorMessage?.name}
-              onChange={(event) => {
-                setName(event.target.value);
-              }}
-            />
-          </Grid>
-          <Grid item sm={4}>
-            <TextField
-              helperText={errorMessage?.latitude ? "Please enter latitude" : ""}
-              id="demo-helper-text-aligned-no-helper"
-              label="Latitude"
-              value={latitude}
-              error={errorMessage?.latitude}
-              onChange={(event) => {
-                setLatitude(event.target.value);
-              }}
-            />
-          </Grid>
-          <Grid item sm={4}>
-            <TextField
-              helperText={
-                errorMessage?.longitude ? "Please enter longitude" : ""
-              }
-              id="demo-helper-text-aligned-no-helper"
-              label="Longitude"
-              value={longitude}
-              error={errorMessage?.longitude}
-              onChange={(event) => {
-                setLongitude(event.target.value);
-              }}
-            />
-          </Grid>
-        </Grid>
-        <Grid container item marginTop={2}>
-          <TextField
-            helperText={
-              errorMessage?.description ? "Please enter description" : ""
-            }
-            id="demo-helper-text-aligned-no-helper"
-            label="Description"
-            error={errorMessage?.description}
-            multiline
-            rows={5}
-            value={description}
-            onChange={(event) => {
-              setDescription(event.target.value);
-            }}
-            sx={{
-              width: { sm: "55%", xs: "89%" },
-              marginBottom: { xs: 5 },
-              color: `${errorMessage ? "error" : "primary"}`,
-            }}
-          />
-
+    <>
+      {props.structure ? (
+        <Box
+          border={2}
+          width={"85%"}
+          marginBottom={10}
+          marginLeft={10}
+          position={"relative"}
+          zIndex={"fab"}
+          borderRadius={{ xs: "0px 0px 16px 16px", sm: "16px" }}
+          sx={{ border: 2, borderColor: "darkgray" }}
+          display={visible === true ? "block" : "none"}
+        >
           <Box
-            sx={{ display: "flex", flexDirection: "column", marginLeft: "8%" }}
-          >
-            <label htmlFor="upload-image">
-              <Button
-                variant="contained"
-                component="span"
-                sx={{ backgroundColor: "grey" }}
-              >
-                Upload Photo
-              </Button>
-              <input
-                id="upload-image"
-                hidden
-                accept="image/*"
-                type="file"
-                onChange={handleFileUpload}
-              />
-            </label>
-            <label style={{ marginTop: 10 }}>{success}</label>
-
-            <FormControl sx={{ width: 160, marginTop: 3 }}>
-              <InputLabel id="demo-simple-select-helper-label">
-                Category
-              </InputLabel>
-              <Select
-                labelId="demo-simple-select-helper-label"
-                id="demo-simple-select-helper"
-                value={category}
-                label="Category"
-                onChange={handleChange}
-                error={errorMessage?.category}
-              >
-                <MenuItem value="New category">
-                  <em>New category</em>
-                </MenuItem>
-                {data.map((category) => (
-                  <MenuItem value={category.name}>{category.name}</MenuItem>
-                ))}
-              </Select>
-              <FormHelperText>
-                {errorMessage?.category ? "Please choose category" : ""}
-              </FormHelperText>
-            </FormControl>
-          </Box>
-          <Box sx={{ display: "flex", flexDirection: "column", marginLeft: 4 }}>
-            {imageUrl !== null && (
-              <div>
-                <Button
-                  variant="contained"
-                  component="span"
-                  sx={{
-                    backgroundColor: "grey",
-                    height: 37,
-                    width: 130,
-                    marginBottom: -1,
-                  }}
-                  onClick={handleClickOpen}
-                >
-                  View photo
-                </Button>
-                <Dialog
-                  open={open}
-                  onClose={handleClose}
-                  aria-labelledby="alert-dialog-title"
-                  aria-describedby="alert-dialog-description"
-                >
-                  <DialogTitle id="alert-dialog-title">
-                    {"Image for web-site"}
-                  </DialogTitle>
-                  <DialogContent>
-                    {imageUrl && (
-                      <img src={imageUrl} alt="Uploaded Image" height="300" />
-                    )}
-                  </DialogContent>
-                  <DialogActions>
-                    <Button onClick={handleClose}>Close</Button>
-                  </DialogActions>
-                </Dialog>
-              </div>
-            )}
-            {newInputCategory()}
-          </Box>
-          <Box
+            margin={5}
             sx={{
               display: "flex",
-              justifyContent: "end",
-              alignItems: "end",
-              marginTop: 3,
+              justifyContent: "space-between",
+              flexGrow: 1,
+              flexWrap: { sm: "nowrap", xs: "wrap" },
             }}
           >
-            <Button
-              variant="contained"
-              sx={{ marginRight: 5 }}
-              size="large"
-              onClick={setBlank}
-            >
-              RESET
-            </Button>
-            <Button
-              variant="contained"
-              color="success"
-              size="large"
-              onClick={checkInfo}
-            >
-              Save
-            </Button>
+            <Grid container spacing={1} direction="row">
+              <Grid container item spacing={3}>
+                <Grid item sm={4}>
+                  <TextField
+                    helperText={
+                      errorMessage?.name ? "Please enter place name" : ""
+                    }
+                    id="demo-helper-text-aligned"
+                    label="Name"
+                    value={props.structure.name}
+                    error={errorMessage?.name}
+                    onChange={(event) => {
+                      setName(event.target.value);
+                    }}
+                  />
+                </Grid>
+                <Grid item sm={4}>
+                  <TextField
+                    helperText={
+                      errorMessage?.latitude ? "Please enter latitude" : ""
+                    }
+                    id="demo-helper-text-aligned-no-helper"
+                    label="Latitude"
+                    value={props.structure.latitude}
+                    error={errorMessage?.latitude}
+                    onChange={(event) => {
+                      setLatitude(event.target.value);
+                    }}
+                  />
+                </Grid>
+                <Grid item sm={4}>
+                  <TextField
+                    helperText={
+                      errorMessage?.longitude ? "Please enter longitude" : ""
+                    }
+                    id="demo-helper-text-aligned-no-helper"
+                    label="Longitude"
+                    value={props.structure.longitude}
+                    error={errorMessage?.longitude}
+                    onChange={(event) => {
+                      setLongitude(event.target.value);
+                    }}
+                  />
+                </Grid>
+              </Grid>
+              <Grid container item marginTop={2}>
+                <TextField
+                  helperText={
+                    errorMessage?.description ? "Please enter description" : ""
+                  }
+                  id="demo-helper-text-aligned-no-helper"
+                  label="Description"
+                  error={errorMessage?.description}
+                  multiline
+                  rows={5}
+                  value={props.structure.description}
+                  onChange={(event) => {
+                    setDescription(event.target.value);
+                  }}
+                  sx={{
+                    width: { sm: "55%", xs: "89%" },
+                    marginBottom: { xs: 5 },
+                    color: `${errorMessage ? "error" : "primary"}`,
+                  }}
+                />
+
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    marginLeft: "8%",
+                  }}
+                >
+                  <label htmlFor="upload-image">
+                    <Button
+                      variant="contained"
+                      component="span"
+                      sx={{ backgroundColor: "grey" }}
+                    >
+                      Upload Photo
+                    </Button>
+                    <input
+                      id="upload-image"
+                      hidden
+                      accept="image/*"
+                      type="file"
+                      onChange={handleFileUpload}
+                    />
+                  </label>
+                  <label style={{ marginTop: 10 }}>{success}</label>
+
+                  <FormControl sx={{ width: 160, marginTop: 3 }}>
+                    <InputLabel id="demo-simple-select-helper-label">
+                      Category
+                    </InputLabel>
+                    <Select
+                      labelId="demo-simple-select-helper-label"
+                      id="demo-simple-select-helper"
+                      value={props.structure.category}
+                      label="Category"
+                      onChange={handleChange}
+                      error={errorMessage?.category}
+                    >
+                      <MenuItem value="New category">
+                        <em>New category</em>
+                      </MenuItem>
+                      {data.map((category) => (
+                        <MenuItem value={category.name}>
+                          {category.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                    <FormHelperText>
+                      {errorMessage?.category ? "Please choose category" : ""}
+                    </FormHelperText>
+                  </FormControl>
+                </Box>
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    marginLeft: 4,
+                  }}
+                >
+                  {imageUrl !== null && (
+                    <div>
+                      <Button
+                        variant="contained"
+                        component="span"
+                        sx={{
+                          backgroundColor: "grey",
+                          height: 37,
+                          width: 130,
+                          marginBottom: -1,
+                        }}
+                        onClick={handleClickOpen}
+                      >
+                        View photo
+                      </Button>
+                      <Dialog
+                        open={open}
+                        onClose={handleClose}
+                        aria-labelledby="alert-dialog-title"
+                        aria-describedby="alert-dialog-description"
+                      >
+                        <DialogTitle id="alert-dialog-title">
+                          {"Image for web-site"}
+                        </DialogTitle>
+                        <DialogContent>
+                          {props.structure.imageUrl && (
+                            <img
+                              src={props.structure.imageUrl}
+                              alt="Uploaded Image"
+                              height="300"
+                            />
+                          )}
+                        </DialogContent>
+                        <DialogActions>
+                          <Button onClick={handleClose}>Close</Button>
+                        </DialogActions>
+                      </Dialog>
+                    </div>
+                  )}
+                  {newInputCategory()}
+                </Box>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "end",
+                    alignItems: "end",
+                    marginTop: 3,
+                  }}
+                >
+                  <Button
+                    variant="contained"
+                    sx={{ marginRight: 5 }}
+                    size="large"
+                    onClick={setBlank}
+                  >
+                    RESET
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="success"
+                    size="large"
+                    onClick={() => {
+                      checkInfo;
+                      setVisible(false);
+                    }}
+                  >
+                    Save
+                  </Button>
+                </Box>
+              </Grid>
+            </Grid>
           </Box>
-        </Grid>
-      </Grid>
-    </Box>
+        </Box>
+      ) : (
+        <Box
+          margin={5}
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            flexGrow: 1,
+            flexWrap: { sm: "nowrap", xs: "wrap" },
+          }}
+        >
+          <Grid container spacing={1} direction="row">
+            <Grid container item spacing={3}>
+              <Grid item sm={4}>
+                <TextField
+                  helperText={
+                    errorMessage?.name ? "Please enter place name" : ""
+                  }
+                  id="demo-helper-text-aligned"
+                  label="Name"
+                  value={name}
+                  error={errorMessage?.name}
+                  onChange={(event) => {
+                    setName(event.target.value);
+                  }}
+                />
+              </Grid>
+              <Grid item sm={4}>
+                <TextField
+                  helperText={
+                    errorMessage?.latitude ? "Please enter latitude" : ""
+                  }
+                  id="demo-helper-text-aligned-no-helper"
+                  label="Latitude"
+                  value={latitude}
+                  error={errorMessage?.latitude}
+                  onChange={(event) => {
+                    setLatitude(event.target.value);
+                  }}
+                />
+              </Grid>
+              <Grid item sm={4}>
+                <TextField
+                  helperText={
+                    errorMessage?.longitude ? "Please enter longitude" : ""
+                  }
+                  id="demo-helper-text-aligned-no-helper"
+                  label="Longitude"
+                  value={longitude}
+                  error={errorMessage?.longitude}
+                  onChange={(event) => {
+                    setLongitude(event.target.value);
+                  }}
+                />
+              </Grid>
+            </Grid>
+            <Grid container item marginTop={2}>
+              <TextField
+                helperText={
+                  errorMessage?.description ? "Please enter description" : ""
+                }
+                id="demo-helper-text-aligned-no-helper"
+                label="Description"
+                error={errorMessage?.description}
+                multiline
+                rows={5}
+                value={description}
+                onChange={(event) => {
+                  setDescription(event.target.value);
+                }}
+                sx={{
+                  width: { sm: "55%", xs: "89%" },
+                  marginBottom: { xs: 5 },
+                  color: `${errorMessage ? "error" : "primary"}`,
+                }}
+              />
+
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  marginLeft: "8%",
+                }}
+              >
+                <label htmlFor="upload-image">
+                  <Button
+                    variant="contained"
+                    component="span"
+                    sx={{ backgroundColor: "grey" }}
+                  >
+                    Upload Photo
+                  </Button>
+                  <input
+                    id="upload-image"
+                    hidden
+                    accept="image/*"
+                    type="file"
+                    onChange={handleFileUpload}
+                  />
+                </label>
+                <label style={{ marginTop: 10 }}>{success}</label>
+
+                <FormControl sx={{ width: 160, marginTop: 3 }}>
+                  <InputLabel id="demo-simple-select-helper-label">
+                    Category
+                  </InputLabel>
+                  <Select
+                    labelId="demo-simple-select-helper-label"
+                    id="demo-simple-select-helper"
+                    value={category}
+                    label="Category"
+                    onChange={handleChange}
+                    error={errorMessage?.category}
+                  >
+                    <MenuItem value="New category">
+                      <em>New category</em>
+                    </MenuItem>
+                    {data.map((category) => (
+                      <MenuItem value={category.name}>{category.name}</MenuItem>
+                    ))}
+                  </Select>
+                  <FormHelperText>
+                    {errorMessage?.category ? "Please choose category" : ""}
+                  </FormHelperText>
+                </FormControl>
+              </Box>
+              <Box
+                sx={{ display: "flex", flexDirection: "column", marginLeft: 4 }}
+              >
+                {imageUrl !== null && (
+                  <div>
+                    <Button
+                      variant="contained"
+                      component="span"
+                      sx={{
+                        backgroundColor: "grey",
+                        height: 37,
+                        width: 130,
+                        marginBottom: -1,
+                      }}
+                      onClick={handleClickOpen}
+                    >
+                      View photo
+                    </Button>
+                    <Dialog
+                      open={open}
+                      onClose={handleClose}
+                      aria-labelledby="alert-dialog-title"
+                      aria-describedby="alert-dialog-description"
+                    >
+                      <DialogTitle id="alert-dialog-title">
+                        {"Image for web-site"}
+                      </DialogTitle>
+                      <DialogContent>
+                        {imageUrl && (
+                          <img
+                            src={imageUrl}
+                            alt="Uploaded Image"
+                            height="300"
+                          />
+                        )}
+                      </DialogContent>
+                      <DialogActions>
+                        <Button onClick={handleClose}>Close</Button>
+                      </DialogActions>
+                    </Dialog>
+                  </div>
+                )}
+                {newInputCategory()}
+              </Box>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "end",
+                  alignItems: "end",
+                  marginTop: 3,
+                }}
+              >
+                <Button
+                  variant="contained"
+                  sx={{ marginRight: 5 }}
+                  size="large"
+                  onClick={setBlank}
+                >
+                  RESET
+                </Button>
+                <Button
+                  variant="contained"
+                  color="success"
+                  size="large"
+                  onClick={checkInfo}
+                >
+                  Save
+                </Button>
+              </Box>
+            </Grid>
+          </Grid>
+        </Box>
+      )}
+    </>
   );
 };

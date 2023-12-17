@@ -27,6 +27,12 @@ interface FormElements extends HTMLFormControlsCollection {
 interface SignInFormElement extends HTMLFormElement {
   readonly elements: FormElements;
 }
+
+interface ValidationErrors {
+  userName: boolean;
+  password: boolean;
+}
+
 export default function SignInPage() {
   const navigate = useNavigate();
   const [login] = useLoginMutation();
@@ -52,9 +58,11 @@ export default function SignInPage() {
 
       navigate("/");
     } catch {
-      console.log("gg wp");
+      console.log("error");
     }
   };
+
+ 
 
   return (
     <ThemeProvider>
@@ -168,10 +176,6 @@ export default function SignInPage() {
                       alignItems: "center",
                     }}
                   >
-                    <Checkbox size="sm" label="Remember me" name="persistent" />
-                    <Link level="title-sm" href="#replace-with-a-link">
-                      Forgot your password?
-                    </Link>
                   </Box>
                   <Button type="submit" fullWidth>
                     Sign in

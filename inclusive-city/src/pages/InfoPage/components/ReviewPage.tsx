@@ -81,7 +81,7 @@ export const ReviewPage = () => {
               <b>{value.username}</b>
             </Typography>
             <Typography sx={{ marginTop: 2 }}>
-              <i>{value.createdDate.toDateString()}</i>
+              <i>{new Date(value.createdDate).toDateString()}</i>
             </Typography>
             <StarRating
               readonly={true}

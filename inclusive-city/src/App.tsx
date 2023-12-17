@@ -13,6 +13,7 @@ import { UserData, setUser } from "./api/userSlice";
 import { useAppDispatch } from "./app/hooks";
 import { getCookie } from "./helpers/getCookie";
 import { jwtParseToken } from "./helpers/jwtParseToken";
+import { AddInfoPage } from "./pages/AdminPage/components/AddInfoPage";
 
 export const useAuthentication = () => {
   const dispatch = useAppDispatch();
@@ -38,6 +39,7 @@ function App() {
         <Route path="/info/:structureId" element={<InfoPage />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/message" element={<MessagePage />} />
+        <Route path="/admin/add" element={<AddInfoPage />} />
       </Routes>
     </div>
   );

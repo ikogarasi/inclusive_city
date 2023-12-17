@@ -45,9 +45,9 @@ export default function SignInPage() {
 
       navigate("/login");
     } catch {
-      console.log("gg wp");
+      console.log("error");
     }
-    //alert(JSON.stringify(data, null, 2));
+    
   };
 
   return (

@@ -21,7 +21,7 @@ import { AddInfoPage } from "./AddInfoPage";
 import { EditInfoPage } from "./EditinfoPage";
 import { MessageInfoPage } from "./MessageInfoPage";
 
-export const ThreeChoice = () => {
+export const ThreeChoice = (choice?: number) => {
   const [value, setValue] = React.useState(0);
   return (
     <div
@@ -87,7 +87,7 @@ export const ThreeChoice = () => {
         sx={{ border: 2, borderColor: "darkgray" }}
       >
         <Box display={value === 0 ? "block" : "none"}>
-          <AddInfoPage />
+          <AddInfoPage/>
         </Box>
         <Box display={value === 1 ? "block" : "none"}>
           <EditInfoPage />
