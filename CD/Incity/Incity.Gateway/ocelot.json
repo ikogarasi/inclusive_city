@@ -196,17 +196,17 @@
     },
     //QuestionsAPI
     {
-      "DownstreamPathTemplate": "/api/Admin/Answer/{everything}",
+      "DownstreamPathTemplate": "/api/Admin/Answer",
       "DownstreamScheme": "https",
+      "AddQueries": [ "pending", "userId" ],
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
           "Port": 7252
         }
       ],
-      "UpstreamPathTemplate": "/c/api/Admin/Answer/{everything}",
+      "UpstreamPathTemplate": "/c/api/Admin/Answer",
       "UpstreamHttpMethod": [ "GET" ],
-      "AddQueries": [ "pending", "userId" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer"
       }
