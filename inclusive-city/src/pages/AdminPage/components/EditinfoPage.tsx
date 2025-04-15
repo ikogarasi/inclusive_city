@@ -9,7 +9,6 @@ import {
 import { useState } from "react";
 import { AddInfoPage } from "./AddInfoPage";
 import { GetStructureDto } from "../../../app/api/structureApi";
-import { useNavigate } from "react-router-dom";
 
 export const EditInfoPage = () => {
   const [deleteStructure] = useDeleteStructureMutation();

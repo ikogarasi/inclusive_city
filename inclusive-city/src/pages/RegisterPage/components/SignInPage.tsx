@@ -11,14 +11,15 @@ import Input from "@mui/joy/Input";
 import Typography from "@mui/joy/Typography";
 import Stack from "@mui/joy/Stack";
 import { ThemeProvider } from "@mui/joy";
-import { common } from "@mui/material/colors";
-import { LoginDto } from "../../../app/api/authApi";
+import { common, red } from "@mui/material/colors";
+import { ApiException, LoginDto } from "../../../app/api/authApi";
 import { useNavigate } from "react-router-dom";
 import { useLoginMutation } from "../../../api/authRtkApi";
 import { useAppDispatch } from "../../../app/hooks";
 import { setCookies } from "../../../helpers/setCookies";
 import { jwtParseToken } from "../../../helpers/jwtParseToken";
 import { setUser } from "../../../api/userSlice";
+import { error } from "console";
 
 interface FormElements extends HTMLFormControlsCollection {
   username: HTMLInputElement;
@@ -37,6 +38,7 @@ export default function SignInPage() {
   const navigate = useNavigate();
   const [login] = useLoginMutation();
   const dispatch = useAppDispatch();
+  const [errorMessage, SetError] = React.useState(false);
 
   const handleSubmit = async (event: React.FormEvent<SignInFormElement>) => {
     event.preventDefault();
@@ -57,9 +59,10 @@ export default function SignInPage() {
       dispatch(setUser(userData));
 
       navigate("/");
-    } catch {
-      console.log("error");
-    }
+    } catch (error) {
+      SetError(true);
+      }
+    
   };
 
  
@@ -155,18 +158,19 @@ export default function SignInPage() {
                     Sign up!
                   </Link>
                 </Typography>
+                <Typography level="body-sm" sx={{color: 'red'}} display={errorMessage ? 'block' : 'none'}>Check your nickname or password and try again</Typography>
               </Stack>
             </Stack>
-
+            
             <Stack gap={4} sx={{ mt: 2 }}>
               <form onSubmit={handleSubmit}>
                 <FormControl required>
                   <FormLabel>Username</FormLabel>
-                  <Input type="username" name="username" />
+                  <Input error={errorMessage ? true : false} type="username" name="username" />
                 </FormControl>
                 <FormControl required>
                   <FormLabel>Password</FormLabel>
-                  <Input type="password" name="password" />
+                  <Input error={errorMessage ? true : false} type="password" name="password" />
                 </FormControl>
                 <Stack gap={4} sx={{ mt: 2 }}>
                   <Box

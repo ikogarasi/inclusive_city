@@ -13,7 +13,7 @@ import { ThemeProvider } from "@mui/joy";
 import { common } from "@mui/material/colors";
 import { useRegisterMutation } from "../../../api/authRtkApi";
 import { useNavigate } from "react-router-dom";
-import { RegisterDto } from "../../../app/api/authApi";
+import { ApiException, RegisterDto } from "../../../app/api/authApi";
 
 interface FormElements extends HTMLFormControlsCollection {
   username: HTMLInputElement;
@@ -28,6 +28,7 @@ interface SignInFormElement extends HTMLFormElement {
 export default function SignInPage() {
   const [register] = useRegisterMutation();
   const navigate = useNavigate();
+  const [error, SetError] = React.useState('');
 
   const handleSubmit = async (e: React.FormEvent<SignInFormElement>) => {
     e.preventDefault();
@@ -44,8 +45,12 @@ export default function SignInPage() {
       await register(data);
 
       navigate("/login");
-    } catch {
-      console.log("error");
+    } catch (error) {
+      if (error) {
+        console.log(error);
+
+      }
+      console.log(error);
     }
     
   };

@@ -4,6 +4,7 @@ import { CardCity } from "./components/CardCity";
 import { HowItWorks } from "./components/HowItWorks";
 import { CantFind } from "./components/CantFind";
 import { Footer } from "../NavbarAndFooter/Footer";
+import { ChatPopUp } from "../NavbarAndFooter/ChatPopUp";
 
 export const HomePage = () => {
   return(
@@ -11,7 +12,8 @@ export const HomePage = () => {
     <Navbar/>
     <CardCity/>
     <HowItWorks/>
-    <CantFind/>
+      <CantFind />
+      <ChatPopUp/>
     <Footer/>
     </div>
   );
