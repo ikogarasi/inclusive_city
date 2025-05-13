@@ -14,6 +14,17 @@ import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ChatMessage from "./components/ChatMessage";
 import { InCityInfo } from "./components/InCityInfo";
 import ModeCommentIcon from "@mui/icons-material/ModeComment";
+import {
+  detectRouteIntent,
+  findInclusivePlaces,
+  InclusivePlace,
+  navigateToMapPage
+} from "./../../app/overpassService";
+import { buildRoute } from "./../../app/api/utils/way";
+// @ts-ignore
+import * as polyline from "@mapbox/polyline";
+import { useNavigate } from "react-router-dom";
+
 
 export const ChatPopUp = () => {
 
@@ -33,13 +44,22 @@ export const ChatPopUp = () => {
 
 function PopupWithTrigger(props: PopupProps & { buttonLabel: string }) {
 
-    const { id, buttonLabel, ...other } = props;
+  const { id, buttonLabel, ...other } = props;
+
+  const [polylines, setPolyline] = React.useState<L.LatLngExpression[]>([]);
+  
+  const [lastFoundPlaces, setLastFoundPlaces] = useState<InclusivePlace[]>([]);
     
-    const [textInput, setTextInput] = useState("");
+  const [textInput, setTextInput] = useState("");
 
-    const { isListening, transcript, startListening, stopListening } = useSpeechToText({ continuous: true })
+  const { isListening, transcript, startListening, stopListening } = useSpeechToText({ continuous: true })
 
-    const chatBodyRef = useRef<HTMLDivElement | null>(null);
+  const chatBodyRef = useRef<HTMLDivElement | null>(null);
+
+  const navigate = useNavigate();
+
+  
+  
     
     const startStopListening = () => {
         isListening ? stopVoiceInput() : startListening();
@@ -105,55 +125,383 @@ function PopupWithTrigger(props: PopupProps & { buttonLabel: string }) {
     const inputRef = useRef<HTMLInputElement | null>(null);
 
     const [chatHistory, setChatHistory] = useState<
-        { role: string; text: string; hideInChat?: boolean }[]
-        >([{
+      { role: string; text: string; hideInChat?: boolean }[]
+    >(() => {
+      const saved = sessionStorage.getItem("chatHistory");
+      if (saved) {
+        return JSON.parse(saved);
+      } else {
+        return [
+          {
             hideInChat: true,
-            role: 'model',
-            text: InCityInfo
-        }]);
-    
-    const generateBotResponse = async (history: { role: string; text: string; }[]) => {
+            role: "model",
+            text: InCityInfo,
+          },
+        ];
+      }
+    });
 
-        const updateHistory = (text: string, isError = false) => {
-            // Функція для оновлення чату
-            setChatHistory((prev) => [
-                ...prev.filter((msg) => msg.text !== "Треба трішки подумати..."),
-                { role: "model", text, isError },
-            ]);
-        };
+  
+  useEffect(() => {
+    sessionStorage.setItem("chatHistory", JSON.stringify(chatHistory));
+    console.log(chatHistory);
+  }, [chatHistory]);
+  
+  
+  const generateBotResponse = async (
+    history: { role: string; text: string }[]
+  ) => {
+    const updateHistory = (text: string, isError = false) => {
+      // Функція для оновлення чату
+      setChatHistory((prev) => [
+        ...prev.filter((msg) => msg.text !== "Треба трішки подумати..."),
+        { role: "model", text, isError },
+      ]);
+    };
 
-        const formattedHistory = history.map(({ role, text }) => ({ role, parts: [{ text }] }));
+    const formattedHistory = history.map(({ role, text }) => ({
+      role,
+      parts: [{ text }],
+    }));
 
-        const requestOptions = {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ contents: formattedHistory })
+    const requestOptions = {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ contents: formattedHistory }),
+    };
+
+    try {
+      //Виклик API для отримання відповіді бота
+      const response = await fetch(
+        import.meta.env.VITE_API_URL,
+        requestOptions
+      );
+      const data = await response.json();
+      if (!response.ok)
+        throw new Error(data.error.message || "Something went wrong");
+
+      //Очищення та оновлення чату з відповіддю бота
+      let apiResponseText = data.candidates[0].content.parts[0].text
+        .replace(/\*\*(.*?)\*\*/g, "$1")
+        .trim();
+
+      const overpassQueryMatch = apiResponseText.match(
+        /\[out:json\];\s*\([\s\S]*?\);\s*out center;/
+      );
+
+      console.log(apiResponseText);
+
+      const userMessage = history[history.length - 1]?.text || "";
+
+      const navigationTag = apiResponseText.match(/\[NAVIGATE:(.*?)\]/i);
+
+      apiResponseText = apiResponseText
+        .replace(/\[NAVIGATE:(.*?)\]/i, "")
+        .trim();
+
+       //  Перехід на сторінку
+       if (navigationTag) {
+         const path = navigationTag[1].trim();
+         updateHistory(`Переходжу на сторінку: ${path}...`);
+        
+         setTimeout(() => {
+           navigate(path);
+         }, 1000);
+         return;
+       }
+
+      // Перевіряємо, чи є в повідомленні ключові слова для побудови маршруту
+      const routeKeywords = [
+        "маршрут",
+        "шлях",
+        "прокласти",
+        "проклади",
+        "як дійти",
+        "як пройти",
+        "як доїхати",
+        "як добратися",
+        "дорога до",
+        "провести до",
+        "покажи дорогу",
+        "побудуй",
+      ];
+
+      // Перевіряємо наявність ключових слів маршруту в запиті користувача
+      const isRouteRequest = routeKeywords.some((keyword) =>
+        userMessage.toLowerCase().includes(keyword.toLowerCase())
+      );
+
+
+      // Обробка запиту на побудову маршруту
+      const processRouteRequest = async (userMessage: string) => {
+        // Отримуємо актуальні дані про місця з sessionStorage
+        let placesToUse = [...lastFoundPlaces]; // Спочатку берем що є в стані
+
+        const storedInclusivePlaces = sessionStorage.getItem("inclusivePlaces");
+        if (storedInclusivePlaces) {
+          try {
+            const parsedPlaces = JSON.parse(storedInclusivePlaces);
+
+            // Одразу використовуємо отримані дані
+            placesToUse = parsedPlaces;
+
+            // Також оновлюємо стан для майбутніх запитів
+            setLastFoundPlaces(parsedPlaces);
+
+            console.log(
+              "Завантажено місць із sessionStorage:",
+              parsedPlaces.length
+            );
+          } catch (error) {
+            console.error(
+              "Error parsing inclusivePlaces from sessionStorage:",
+              error
+            );
+          }
         }
+
+        // Перевіряємо, чи є у нас дані про місця
+        if (placesToUse.length === 0) {
+          updateHistory(
+            "Спочатку потрібно знайти інклюзивні місця. Спробуйте задати запит про пошук доступних місць."
+          );
+          return;
+        }
+
+        console.log("Виявлено запит на маршрут:", userMessage);
+        console.log(
+          "Доступні місця:",
+          placesToUse.map((p) => p.tags?.name || p.address)
+        );
 
         try {
-            //Виклик API для отримання відповіді бота
-            const response = await fetch(import.meta.env.VITE_API_URL, requestOptions);
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.error.message || "Something went wrong");
-            
+          // Використовуємо detectRouteIntent для визначення конкретного місця
+          const targetPlace = await detectRouteIntent(userMessage, placesToUse);
+          console.log("Цільове місце:", targetPlace);
 
-            //Очищення та оновлення чату з відповіддю бота
-            const apiResponseText = data.candidates[0].content.parts[0].text.replace(/\*\*(.*?)\*\*/g, '$1').
-                trim();
-            
-            speakUp(apiResponseText);
-            
-            updateHistory(apiResponseText);
+          if (targetPlace && targetPlace !== "Немає маршруту") {
+            // Шукаємо відповідне місце серед завантажених місць
+            const matched = placesToUse.find((p) => {
+              // Перевіряємо назву та адресу (якщо вони існують)
+              const nameMatch =
+                p.tags?.name &&
+                (targetPlace
+                  .toLowerCase()
+                  .includes(p.tags.name.toLowerCase()) ||
+                  (p.tags?.name &&
+                    p.tags.name
+                      .toLowerCase()
+                      .includes(targetPlace.toLowerCase())));
 
-        } catch (error: unknown) {
-            if (error instanceof Error) {
-                updateHistory(error.message, true);
+              const addressMatch =
+                p.address &&
+                (targetPlace.toLowerCase().includes(p.address.toLowerCase()) ||
+                  p.address.toLowerCase().includes(targetPlace.toLowerCase()));
+
+              return nameMatch || addressMatch;
+            });
+
+            if (matched && matched.lat && matched.lon) {
+              updateHistory(
+                `Будую маршрут до "${matched.tags?.name || matched.address}"...`
+              );
+
+              let startCoordinates = {
+                lat: 49.84309611110559, // Львів за замовчуванням
+                lon: 24.030603315948206,
+              };
+
+              try {
+                // Спроба отримати точні координати
+                const position = await new Promise<GeolocationPosition>(
+                  (resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject, {
+                      enableHighAccuracy: true,
+                      timeout: 5000,
+                      maximumAge: 0,
+                    });
+                  }
+                );
+
+                startCoordinates = {
+                  lat: position.coords.latitude,
+                  lon: position.coords.longitude,
+                };
+              } catch (locError) {
+                console.warn(
+                  "Не вдалося отримати геолокацію для маршруту:",
+                  locError
+                );
+                updateHistory(
+                  "Не вдалося визначити ваше місцезнаходження. Використовую координати Львова за замовчуванням."
+                );
+              }
+
+              console.log(
+                `Будую маршрут від [${startCoordinates.lat}, ${startCoordinates.lon}] до [${matched.lat}, ${matched.lon}]`
+              );
+
+              const route = await buildRoute(
+                matched.lat,
+                matched.lon,
+                startCoordinates.lat,
+                startCoordinates.lon
+              );
+
+              // Зберігаємо координати користувача в sessionStorage
+              sessionStorage.setItem(
+                "userCoordinates",
+                JSON.stringify(startCoordinates)
+              );
+
+              // Зберігаємо маршрут і перенаправляємо на карту
+              setPolyline(route);
+              sessionStorage.setItem("routeData", JSON.stringify(route));
+              navigateToMapPage(placesToUse);
+
+              updateHistory(
+                `Ось маршрут до ${matched.tags?.name || matched.address}.`
+              );
             } else {
-                // Обробка інших типів помилок (якщо потрібно)
-                updateHistory('Unknown error occurred', true);
+              updateHistory(
+                "Не вдалося знайти вказане місце серед знайдених раніше інклюзивних місць. Спробуйте уточнити назву, вказавши адресу"
+              );
             }
+          } else {
+            updateHistory(
+              "Не вдалося визначити до якого місця ви хочете прокласти маршрут. Будь ласка, вкажіть назву або адресу місця точніше."
+            );
+          }
+        } catch (error) {
+          console.error("Помилка при побудові маршруту:", error);
+          updateHistory(
+            "На жаль, сталася помилка при побудові маршруту. Спробуйте ще раз."
+          );
         }
+      };
+
+      // Обробляємо запит на маршрут, якщо він є
+      if (isRouteRequest) {
+        await processRouteRequest(userMessage);
+        return; // Важливо - повертаємось, щоб не продовжувати виконання функції
+      }
+      // Обробка запиту на пошук місць через Overpass API
+      else if (overpassQueryMatch) {
+        let overpassQuery = overpassQueryMatch[0].trim();
+
+        // Показуємо користувачеві, що виконуємо пошук
+        updateHistory("Я шукаю інклюзивні місця за вашим запитом...");
+
+        try {
+          // Перевіряємо, чи потрібна нам геолокація для цього запиту
+          const needsGeolocation =
+            overpassQuery.includes("LAT") && overpassQuery.includes("LON");
+
+          // Ініціалізуємо координати
+          let coordinates = {
+            lat: 49.84309611110559, // Львів за замовчуванням
+            lon: 24.030603315948206,
+          };
+
+          // Отримуємо геолокацію, якщо вона потрібна
+          if (needsGeolocation) {
+            updateHistory("Визначаю ваше місцезнаходження...");
+
+            try {
+              const position = await new Promise<GeolocationPosition>(
+                (resolve, reject) => {
+                  if (!navigator.geolocation) {
+                    reject(
+                      new Error("Геолокація не підтримується вашим браузером")
+                    );
+                    return;
+                  }
+                  navigator.geolocation.getCurrentPosition(resolve, reject, {
+                    enableHighAccuracy: true,
+                    timeout: 5000,
+                    maximumAge: 0,
+                  });
+                }
+              );
+
+              coordinates = {
+                lat: position.coords.latitude,
+                lon: position.coords.longitude,
+              };
+
+              console.log("Отримані координати:", coordinates);
+            } catch (locError) {
+              console.warn("Не вдалося отримати геолокацію:", locError);
+              updateHistory(
+                "Не вдалося визначити ваше місцезнаходження. Використовую координати Львова за замовчуванням."
+              );
+            }
+
+            // Підставляємо координати в запит
+            overpassQuery = overpassQuery
+              .replace(/LAT/g, coordinates.lat.toString())
+              .replace(/LON/g, coordinates.lon.toString());
+          }
+
+          console.log("Підготовлений Overpass запит:", overpassQuery);
+
+          // Використовуємо функцію з нашого модуля для пошуку інклюзивних місць
+          const inclusivePlaces = await findInclusivePlaces(overpassQuery);
+
+          // Зберігаємо знайдені місця в стані для подальших запитів на маршрути
+          setLastFoundPlaces(inclusivePlaces);
+          console.log("Знайдено інклюзивних місць:", inclusivePlaces.length);
+
+          if (inclusivePlaces.length > 0) {
+            // Формуємо відповідь з адресами
+            let placesResponse = "Я знайшов наступні інклюзивні місця:\n\n";
+            inclusivePlaces.forEach((place, index) => {
+              placesResponse += `${index + 1}. ${place.address}\n`;
+            });
+
+            placesResponse +=
+              "\nЗараз я перенаправлю вас на карту з цими місцями...";
+
+            // Оновлюємо історію чату
+            updateHistory(placesResponse);
+
+            // Зберігаємо координати користувача в sessionStorage для використання на сторінці карти
+            sessionStorage.setItem(
+              "userCoordinates",
+              JSON.stringify(coordinates)
+            );
+
+            // Після невеликої затримки переходимо на сторінку карти
+            setTimeout(() => {
+              navigateToMapPage(inclusivePlaces);
+            }, 2000);
+          } else {
+            updateHistory(
+              "На жаль, я не знайшов інклюзивних місць, які відповідають вашому запиту."
+            );
+          }
+        } catch (error) {
+          console.error("Error processing Overpass query:", error);
+          const errorMessage =
+            error instanceof Error ? error.message : "Невідома помилка";
+          updateHistory(`Виникла помилка при пошуку: ${errorMessage}`, true);
+        }
+      }
+      // Стандартна відповідь моделі
+      else {
+        // Якщо немає Overpass запиту і це не запит на маршрут, просто показуємо відповідь бота
+        speakUp(apiResponseText);
+        updateHistory(apiResponseText);
+      }
+    } catch (error) {
+      console.error("Error generating bot response:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Невідома помилка";
+      updateHistory(`Виникла помилка: ${errorMessage}`, true);
     }
+  };
+    
+  
     
     const handleFormSumbit = (e: any) => {
         e.preventDefault();
@@ -186,8 +534,13 @@ function PopupWithTrigger(props: PopupProps & { buttonLabel: string }) {
     useEffect(() => {
 
         //Auto-scroll when chat history updated
-        chatBodyRef.current?.scrollTo({ top: chatBodyRef.current.scrollHeight, behavior: 'smooth' });
-    }, [chatHistory]);
+      chatBodyRef.current?.scrollTo({ top: chatBodyRef.current.scrollHeight, behavior: 'smooth' });
+      console.log("Scroll down", location);
+    }, [chatHistory, location]);
+
+  useEffect(() => {
+    console.log(location);
+  }, [location]);
 
   return (
     <div

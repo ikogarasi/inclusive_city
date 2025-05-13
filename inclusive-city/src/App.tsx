@@ -14,6 +14,7 @@ import { useAppDispatch } from "./app/hooks";
 import { getCookie } from "./helpers/getCookie";
 import { jwtParseToken } from "./helpers/jwtParseToken";
 import { AddInfoPage } from "./pages/AdminPage/components/AddInfoPage";
+import { ChatPopUp } from "./pages/NavbarAndFooter/ChatPopUp";
 
 export const useAuthentication = () => {
   const dispatch = useAppDispatch();
@@ -31,6 +32,7 @@ function App() {
 
   return (
     <div className={styles.main}>
+      <ChatPopUp/>
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/map" element={<MapPage />} />

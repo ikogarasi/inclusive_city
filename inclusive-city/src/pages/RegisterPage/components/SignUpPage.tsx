@@ -14,6 +14,7 @@ import { common } from "@mui/material/colors";
 import { useRegisterMutation } from "../../../api/authRtkApi";
 import { useNavigate } from "react-router-dom";
 import { ApiException, RegisterDto } from "../../../app/api/authApi";
+import { ChatPopUp } from "../../NavbarAndFooter/ChatPopUp";
 
 interface FormElements extends HTMLFormControlsCollection {
   username: HTMLInputElement;

@@ -20,6 +20,7 @@ import { setCookies } from "../../../helpers/setCookies";
 import { jwtParseToken } from "../../../helpers/jwtParseToken";
 import { setUser } from "../../../api/userSlice";
 import { error } from "console";
+import { ChatPopUp } from "../../NavbarAndFooter/ChatPopUp";
 
 interface FormElements extends HTMLFormControlsCollection {
   username: HTMLInputElement;

@@ -13,7 +13,6 @@ export const HomePage = () => {
     <CardCity/>
     <HowItWorks/>
       <CantFind />
-      <ChatPopUp/>
     <Footer/>
     </div>
   );
