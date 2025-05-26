@@ -18,16 +18,16 @@ import {
   detectRouteIntent,
   findInclusivePlaces,
   InclusivePlace,
-  navigateToMapPage
+  navigateToMapPage,
 } from "./../../app/overpassService";
 import { buildRoute } from "./../../app/api/utils/way";
 // @ts-ignore
 import * as polyline from "@mapbox/polyline";
 import { useNavigate } from "react-router-dom";
-
+// Імпорт функцій для роботи з мовою
+import { speakUp } from "../../app/useTexttoSpeech";
 
 export const ChatPopUp = () => {
-
   return (
     <div>
       <Box>
@@ -43,111 +43,111 @@ export const ChatPopUp = () => {
 };
 
 function PopupWithTrigger(props: PopupProps & { buttonLabel: string }) {
-
   const { id, buttonLabel, ...other } = props;
 
   const [polylines, setPolyline] = React.useState<L.LatLngExpression[]>([]);
-  
+
   const [lastFoundPlaces, setLastFoundPlaces] = useState<InclusivePlace[]>([]);
-    
+
   const [textInput, setTextInput] = useState("");
 
-  const { isListening, transcript, startListening, stopListening } = useSpeechToText({ continuous: true })
+  const { isListening, transcript, startListening, stopListening } =
+    useSpeechToText({ continuous: true });
 
   const chatBodyRef = useRef<HTMLDivElement | null>(null);
 
   const navigate = useNavigate();
 
-  
-  
-    
-    const startStopListening = () => {
-        isListening ? stopVoiceInput() : startListening();
-    };
+  const startStopListening = () => {
+    isListening ? stopVoiceInput() : startListening();
+  };
 
-    const stopVoiceInput = () => {
-        setTextInput(prevVal => prevVal + (transcript.length ? (prevVal.length ? ' ' : '') + transcript : ''))
-        stopListening()
+  const stopVoiceInput = () => {
+    setTextInput(
+      (prevVal) =>
+        prevVal +
+        (transcript.length ? (prevVal.length ? " " : "") + transcript : "")
+    );
+    stopListening();
+  };
+
+  // Cтан для відстеження того, чи користувач взаємодіяв з чатом
+  const [hasUserInteracted, setHasUserInteracted] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem("chatUserInteracted");
+      return saved ? JSON.parse(saved) : false;
+    } catch (error) {
+      console.error("Error loading chat interaction state:", error);
+      return false;
     }
+  });
 
-    const splitText = (text: string, maxLength = 150) => {
-      const sentences = text.match(/[^.!?]+[.!?]*/g) || [text];
-      const chunks = [];
-      let chunk = "";
+  const [anchor, setAnchor] = React.useState<null | HTMLElement>(null);
 
-      for (const sentence of sentences) {
-        if ((chunk + sentence).length <= maxLength) {
-          chunk += sentence;
-        } else {
-          chunks.push(chunk.trim());
-          chunk = sentence;
-        }
+  // Окремий стан для контролю відкриття попапу
+  const [isPopupOpen, setIsPopupOpen] = useState<boolean>(hasUserInteracted);
+
+  // Зберігаємо стан взаємодії в localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        "chatUserInteracted",
+        JSON.stringify(hasUserInteracted)
+      );
+    } catch (error) {
+      console.error("Error saving chat interaction state:", error);
+    }
+  }, [hasUserInteracted]);
+
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    if (!anchor) {
+      setAnchor(event.currentTarget);
+      setIsPopupOpen(true);
+    } else {
+      setAnchor(null);
+      setIsPopupOpen(false);
+    }
+  };
+
+  // Автоматично встановлюємо anchor для користувачів, які раніше взаємодіяли
+  useEffect(() => {
+    if (hasUserInteracted && !anchor && isPopupOpen) {
+      // Знаходимо кнопку чату для правильного позиціонування
+      const chatButton = document.querySelector(
+        '[aria-describedby="' + id + '"]'
+      ) as HTMLElement;
+      if (chatButton) {
+        setAnchor(chatButton);
       }
-      if (chunk.trim()) chunks.push(chunk.trim());
-      return chunks;
-    };
+    }
+  }, [hasUserInteracted, anchor, isPopupOpen, id]);
 
-    const speakUp = (text: string) => {
-      window.speechSynthesis.cancel(); // Зупинка попереднього синтезу
+  const open = isPopupOpen && Boolean(anchor);
 
-      const chunks = splitText(text);
+  const inputRef = useRef<HTMLTextAreaElement | null>(null);
 
-      const speakChunk = (index: number) => {
-        if (index >= chunks.length) return;
+  const [chatHistory, setChatHistory] = useState<
+    { role: string; text: string; hideInChat?: boolean }[]
+  >(() => {
+    const saved = sessionStorage.getItem("chatHistory");
+    if (saved) {
+      return JSON.parse(saved);
+    } else {
+      return [
+        {
+          hideInChat: true,
+          role: "model",
+          text: InCityInfo,
+        },
+      ];
+    }
+  });
 
-        const speech = new SpeechSynthesisUtterance(chunks[index]);
-        speech.lang = "uk-UA";
-        speech.rate = 0.95; 
-
-        speech.onend = () => {
-          console.log(`Зачитано частину ${index + 1}`);
-          speakChunk(index + 1); // Зачитування наступної частини
-        };
-
-        speech.onerror = (event) => {
-          console.error("Помилка синтезу мови:", event.error);
-        };
-
-        window.speechSynthesis.speak(speech);
-      };
-
-      speakChunk(0);
-    };
-
-    const [anchor, setAnchor] = React.useState<null | HTMLElement>(null);
-
-    const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-        setAnchor(anchor ? null : event.currentTarget);
-    };
-
-    const open = Boolean(anchor);
-
-    const inputRef = useRef<HTMLInputElement | null>(null);
-
-    const [chatHistory, setChatHistory] = useState<
-      { role: string; text: string; hideInChat?: boolean }[]
-    >(() => {
-      const saved = sessionStorage.getItem("chatHistory");
-      if (saved) {
-        return JSON.parse(saved);
-      } else {
-        return [
-          {
-            hideInChat: true,
-            role: "model",
-            text: InCityInfo,
-          },
-        ];
-      }
-    });
-
-  
   useEffect(() => {
     sessionStorage.setItem("chatHistory", JSON.stringify(chatHistory));
     console.log(chatHistory);
   }, [chatHistory]);
-  
-  
+
   const generateBotResponse = async (
     history: { role: string; text: string }[]
   ) => {
@@ -199,16 +199,16 @@ function PopupWithTrigger(props: PopupProps & { buttonLabel: string }) {
         .replace(/\[NAVIGATE:(.*?)\]/i, "")
         .trim();
 
-       //  Перехід на сторінку
-       if (navigationTag) {
-         const path = navigationTag[1].trim();
-         updateHistory(`Переходжу на сторінку: ${path}...`);
-        
-         setTimeout(() => {
-           navigate(path);
-         }, 1000);
-         return;
-       }
+      //  Перехід на сторінку
+      if (navigationTag) {
+        const path = navigationTag[1].trim();
+        updateHistory(`Переходжу на сторінку: ${path}...`);
+
+        setTimeout(() => {
+          navigate(path);
+        }, 1000);
+        return;
+      }
 
       // Перевіряємо, чи є в повідомленні ключові слова для побудови маршруту
       const routeKeywords = [
@@ -230,7 +230,6 @@ function PopupWithTrigger(props: PopupProps & { buttonLabel: string }) {
       const isRouteRequest = routeKeywords.some((keyword) =>
         userMessage.toLowerCase().includes(keyword.toLowerCase())
       );
-
 
       // Обробка запиту на побудову маршруту
       const processRouteRequest = async (userMessage: string) => {
@@ -357,7 +356,7 @@ function PopupWithTrigger(props: PopupProps & { buttonLabel: string }) {
               // Зберігаємо маршрут і перенаправляємо на карту
               setPolyline(route);
               sessionStorage.setItem("routeData", JSON.stringify(route));
-              navigateToMapPage(placesToUse);
+              navigateToMapPage(placesToUse, navigate);
 
               updateHistory(
                 `Ось маршрут до ${matched.tags?.name || matched.address}.`
@@ -473,7 +472,7 @@ function PopupWithTrigger(props: PopupProps & { buttonLabel: string }) {
 
             // Після невеликої затримки переходимо на сторінку карти
             setTimeout(() => {
-              navigateToMapPage(inclusivePlaces);
+              navigateToMapPage(inclusivePlaces, navigate);
             }, 2000);
           } else {
             updateHistory(
@@ -490,6 +489,7 @@ function PopupWithTrigger(props: PopupProps & { buttonLabel: string }) {
       // Стандартна відповідь моделі
       else {
         // Якщо немає Overpass запиту і це не запит на маршрут, просто показуємо відповідь бота
+        // Використовуємо імпортовану функцію speakUp
         speakUp(apiResponseText);
         updateHistory(apiResponseText);
       }
@@ -500,43 +500,55 @@ function PopupWithTrigger(props: PopupProps & { buttonLabel: string }) {
       updateHistory(`Виникла помилка: ${errorMessage}`, true);
     }
   };
-    
-  
-    
-    const handleFormSumbit = (e: any) => {
-        e.preventDefault();
 
-        if (!inputRef.current) return;
-        const userMessage = inputRef.current.value.trim();
-        inputRef.current.value = '';
+  const handleFormSumbit = (e: any) => {
+    e.preventDefault();
 
-        if (!userMessage) return;
+    if (!inputRef.current) return;
+    const userMessage = inputRef.current.value.trim();
+    inputRef.current.value = "";
 
-        //Update chat hsitory with user`s message
+    if (!userMessage) return;
 
-        setChatHistory((history) => [...history, { role: 'user', text: userMessage }]);
-        
-        setTimeout(() => {
-            setChatHistory((history) => [...history, { role: 'model', text: "Треба трішки подумати..." }])
-
-        generateBotResponse([
-          ...chatHistory,
-          {
-            role: "user",
-            text: `Using the details provided above, please address this query: ${userMessage}`,
-          },
-        ]);
-
-    },  600)
-     setTextInput("");
+    if (!hasUserInteracted) {
+      setHasUserInteracted(true);
+      console.log(
+        "Користувач вперше відправив повідомлення - встановлено hasUserInteracted: true"
+      );
     }
 
-    useEffect(() => {
+    //Update chat hsitory with user`s message
 
-        //Auto-scroll when chat history updated
-      chatBodyRef.current?.scrollTo({ top: chatBodyRef.current.scrollHeight, behavior: 'smooth' });
-      console.log("Scroll down", location);
-    }, [chatHistory, location]);
+    setChatHistory((history) => [
+      ...history,
+      { role: "user", text: userMessage },
+    ]);
+
+    setTimeout(() => {
+      setChatHistory((history) => [
+        ...history,
+        { role: "model", text: "Треба трішки подумати..." },
+      ]);
+
+      generateBotResponse([
+        ...chatHistory,
+        {
+          role: "user",
+          text: `Using the details provided above, please address this query: ${userMessage}`,
+        },
+      ]);
+    }, 600);
+    setTextInput("");
+  };
+
+  useEffect(() => {
+    //Auto-scroll when chat history updated
+    chatBodyRef.current?.scrollTo({
+      top: chatBodyRef.current.scrollHeight,
+      behavior: "smooth",
+    });
+    console.log("Scroll down", location);
+  }, [chatHistory, location]);
 
   useEffect(() => {
     console.log(location);
@@ -548,12 +560,18 @@ function PopupWithTrigger(props: PopupProps & { buttonLabel: string }) {
         position: "fixed",
         zIndex: 1000,
         bottom: 0,
-        right: 0,
+        right: -80,
         margin: "30px 0px 20px",
+
         padding: 5,
       }}
     >
-      <Button onClick={handleClick} aria-describedby={id} type="button" style={{borderRadius: '20px'}}>
+      <Button
+        onClick={handleClick}
+        aria-describedby={id}
+        type="button"
+        style={{ borderRadius: "20px" }}
+      >
         <ModeCommentIcon
           sx={{
             color: "#357a38",
@@ -569,7 +587,7 @@ function PopupWithTrigger(props: PopupProps & { buttonLabel: string }) {
           }}
         />
       </Button>
-      <div style={{ width: "350px" }}>
+      <div style={{ width: "350px", marginTop: "-15px" }}>
         <Popup id={id} open={open} anchor={anchor} {...other}>
           <div
             style={{
@@ -629,7 +647,7 @@ function PopupWithTrigger(props: PopupProps & { buttonLabel: string }) {
                 className={styles.chatForm}
                 onSubmit={handleFormSumbit}
               >
-                <input
+                <textarea
                   ref={inputRef}
                   className={styles.messageInput}
                   disabled={isListening}
@@ -644,6 +662,7 @@ function PopupWithTrigger(props: PopupProps & { buttonLabel: string }) {
                   onChange={(e) => {
                     setTextInput(e.target.value);
                   }}
+                  rows={1}
                 />
                 {textInput == "" ? (
                   <button
@@ -681,7 +700,7 @@ const Popup = styled(BasePopup)`
 const PopupBody = styled("div")(
   ({ theme }: { theme: Theme }) => `
   width: 380px;
-  height: 500px;
+  height: 470px;
   display: flex;
   align-items: center;
   padding: 19px;

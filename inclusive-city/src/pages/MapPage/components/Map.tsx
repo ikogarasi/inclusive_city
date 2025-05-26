@@ -144,7 +144,7 @@ export const Map = ({
   };
 
   return (
-    <div>
+    <div style={{ height: "100vh" }}>
       <MapContainer
         center={[49.84309611110559, 24.030603315948206]}
         zoom={17}
@@ -199,7 +199,7 @@ export const Map = ({
             .map((coordinate) => {
               // Використовуємо дані з inclusivePlaces для деталей, якщо вони є
               const place = findInclusivePlaceById(coordinate.id);
-      
+
               return (
                 <Marker
                   key={`inclusive-${coordinate.id}`}

@@ -1,3 +1,5 @@
+import { useNavigate } from "react-router-dom";
+
 interface OverpassElement {
   id: number;
   type: string;
@@ -104,7 +106,8 @@ export const processOverpassResults = (data: OverpassResponse): InclusivePlace[]
 };
 
 // Функція для переходу на існуючу сторінку з результатами
-export const navigateToMapPage = (places: InclusivePlace[]): void => {
+export const navigateToMapPage = (places: InclusivePlace[], navigate: (path: string) => void): void => {
+  
   // Збереження результатів у sessionStorage для доступу на іншій сторінці
   sessionStorage.setItem('inclusivePlaces', JSON.stringify(places));
   console.log(places)

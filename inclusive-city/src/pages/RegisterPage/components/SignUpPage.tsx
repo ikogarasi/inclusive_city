@@ -58,7 +58,7 @@ export default function SignInPage() {
 
   return (
     <ThemeProvider>
-      <CssBaseline />
+      
       <GlobalStyles
         styles={{
           ":root": {

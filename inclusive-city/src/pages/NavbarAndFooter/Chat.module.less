@@ -2,8 +2,8 @@
     display: flex;
     position: relative;
     flex-direction: column;
-    gap: 20px;
-    padding: 25px 22px;
+    gap: 2px;
+    padding: 13px 15px;
     height: 400px;
     overflow-y: auto;
     margin-bottom: 82px;
@@ -46,6 +46,7 @@
     border-radius: 13px 13px 3px 13px;
 }
 
+
 .chatFooter {
  position: absolute;
  bottom: 0;
@@ -72,8 +73,14 @@
   outline: none;
   background: none;
   width: 90%;
-  height: 47px;
-  padding: 0 17px;
+  height: 27px;
+  padding: 10px 17px;/* додає простір зверху і знизу */
+  resize: none; /* заборонити зміну розміру вручну */
+  overflow-y: hidden;
+  font-family: inherit;
+  overflow-y: auto; /* дозволяє прокручувати текст */
+  scrollbar-width: none; /* для Firefox, щоб приховати скрол */
+  -ms-overflow-style: none; /* для старих версій IE */
 }
 
 .chatForm button {
@@ -81,7 +88,7 @@
     width: 35px;
     border: none;
     outline: none;
-    display: none;
+    display: flex;
     cursor: pointer;
     color: green;
     flex-shrink: 0;

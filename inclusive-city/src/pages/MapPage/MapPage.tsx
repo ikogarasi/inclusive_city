@@ -2,13 +2,22 @@ import { Navbar } from "../NavbarAndFooter/Navbar";
 import "leaflet/dist/leaflet.css";
 import { useEffect, useState } from "react";
 import { Map } from "./components/Map";
-import { Box, Stack } from "@mui/joy";
+import { styled } from "@mui/material/styles";
+import { Global } from "@emotion/react";
+import Box from "@mui/material/Box";
+import { grey } from "@mui/material/colors";
+import SwipeableDrawer from "@mui/material/SwipeableDrawer";
+import Typography from "@mui/material/Typography";
+import IconButton from "@mui/material/IconButton";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import CssBaseline from "@mui/material/CssBaseline";
+import { Stack } from "@mui/joy";
 import HeaderSection from "./components/HeaderSection";
 import Filters from "./components/FilterSection";
 import RampCard from "./components/RampCard";
 import Search from "./components/Search";
 import { useGetAllStructuresQuery } from "../../api/structureRtkApi";
-import { ChatPopUp } from "../NavbarAndFooter/ChatPopUp";
 
 // Інтерфейс для координат інклюзивних місць
 interface InclusiveCoordinate {
@@ -16,6 +25,20 @@ interface InclusiveCoordinate {
   lat?: number;
   lon?: number;
 }
+
+// Ширина бічної панелі
+const drawerWidth = 350;
+
+// Стилізована "ручка" для перетягування
+const Puller = styled("div")(({ theme }) => ({
+  width: 30,
+  height: 6,
+  backgroundColor: grey[300],
+  borderRadius: 3,
+  position: "absolute",
+  top: 8,
+  left: "calc(50% - 15px)",
+}));
 
 export const MapPage = () => {
   const [category, setCategory] = useState<string>("All");
@@ -26,6 +49,8 @@ export const MapPage = () => {
   const [inclusiveCoordinates, setInclusiveCoordinates] = useState<
     InclusiveCoordinate[]
   >([]);
+  // Стан для контролю відкриття/закриття бічної панелі
+  const [open, setOpen] = useState(true);
 
   const [location, setLocation] = useState({
     latitude: 49.84309611110559,
@@ -105,39 +130,35 @@ export const MapPage = () => {
     setInclusiveCoordinates([]);
   };
 
+  // Функції для відкриття/закриття панелі
+  const toggleDrawer = (newOpen: boolean) => () => {
+    setOpen(newOpen);
+  };
+
   return (
     <>
-      <div>
+      <div
+        style={{ height: "100vh", display: "flex", flexDirection: "column" }}
+      >
+        
         <Navbar />
+
+        {/* Головний контейнер для карти */}
         <Box
           component="main"
           sx={{
-            height: "calc(100vh - 75px)", // 55px is the height of the NavBar
-            display: "grid",
-            gridTemplateColumns: { xs: "auto", md: "40% 20%" },
-            gridTemplateRows: "auto 1fr auto",
+            flexGrow: 1,
+            position: "relative",
+            height: "calc(100vh - 75px)",
           }}
         >
-          <Stack
-            sx={{
-              backgroundColor: "background.surface",
-              px: { xs: 2, md: 4 },
-              py: 2,
-              borderBottom: "1px solid",
-              borderColor: "divider",
-            }}
-          >
-            <HeaderSection />
-            <Search len={data.length} />
-          </Stack>
-
+          {/* Карта займає весь простір */}
           <Box
             sx={{
-              gridRow: "span 3",
-              display: { xs: "none", md: "flex" },
+              width: "100%",
+              height: "100%",
               backgroundColor: "background.level1",
               backgroundSize: "cover",
-              width: "100%",
             }}
           >
             <Map
@@ -148,33 +169,159 @@ export const MapPage = () => {
             />
           </Box>
 
-          <Stack spacing={2} sx={{ px: { xs: 2, md: 4 }, pt: 2, minHeight: 0 }}>
-            <Filters category={category} setCategory={setCategory} />
-            <Stack spacing={2} sx={{ overflow: "auto" }}>
-              {data.map((value) => (
-                <RampCard key={value.id} structure={value} />
-              ))}
+          {/* Кнопка для відкриття панелі - на великих екранах (десктоп) */}
+          {!open && (
+            <IconButton
+              onClick={toggleDrawer(true)}
+              sx={{
+                position: "absolute",
+                top: "50%",
+                left: 0,
+                transform: "translateY(-50%)",
+                backgroundColor: "background.paper",
+                borderRadius: "0 4px 4px 0",
+                boxShadow: "2px 0 5px rgba(0,0,0,0.1)",
+                "&:hover": {
+                  backgroundColor: "action.hover",
+                },
+                display: { xs: "none", md: "flex" },
+              }}
+            >
+              <ChevronRightIcon />
+            </IconButton>
+          )}
 
-              {/* Додаємо індикатор наявності інклюзивних місць, якщо вони є */}
-              {inclusiveCoordinates.length > 0 && (
-                <Box
-                  sx={{
-                    p: 2,
-                    bgcolor: "background.level2",
-                    borderRadius: "sm",
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <div>
-                    Знайдено інклюзивних місць: {inclusiveCoordinates.length}
-                  </div>
-                  <button onClick={clearInclusivePlaces}>Очистити</button>
-                </Box>
-              )}
-            </Stack>
-          </Stack>
+          {/* Налаштовуємо Global стилі для SwipeableDrawer */}
+          <Global
+            styles={{
+              // Десктоп стилі - панель зліва
+              "@media (min-width: 600px)": {
+                ".MuiDrawer-root > .MuiPaper-root": {
+                  width: drawerWidth,
+                  height: "calc(100vh - 75px)",
+                  position: "absolute",
+                  overflow: "visible",
+                },
+              },
+              // Мобільні стилі - панель знизу
+              "@media (max-width: 599px)": {
+                ".MuiDrawer-root > .MuiPaper-root": {
+                  height: `calc(50% - 30px)`,
+                  overflow: "visible",
+                  borderTopLeftRadius: 8,
+                  borderTopRightRadius: 8,
+                },
+              },
+            }}
+          />
+
+          {/* SwipeableDrawer - відображається по-різному на десктопі та мобільних */}
+          <SwipeableDrawer
+            anchor={window.innerWidth > 600 ? "left" : "bottom"}
+            open={open}
+            onClose={toggleDrawer(false)}
+            onOpen={toggleDrawer(true)}
+            swipeAreaWidth={30}
+            disableSwipeToOpen={false}
+            variant="persistent"
+          >
+            {/* Верхня панель з пулером для мобільних */}
+            {window.innerWidth <= 600 && (
+              <Box
+                sx={{
+                  position: "absolute",
+                  top: -30,
+                  borderTopLeftRadius: 8,
+                  borderTopRightRadius: 8,
+                  visibility: "visible",
+                  right: 0,
+                  left: 0,
+                  height: 30,
+                  backgroundColor: "background.paper",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Puller />
+                <Typography sx={{ position: "absolute", textAlign: "center" }}>
+                  {data.length} результатів
+                </Typography>
+              </Box>
+            )}
+
+            {/* Кнопка закриття для десктопа */}
+            {window.innerWidth > 600 && (
+              <IconButton
+                onClick={toggleDrawer(false)}
+                sx={{
+                  position: "absolute",
+                  right: -15,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  backgroundColor: "background.paper",
+                  borderRadius: "0 4px 4px 0",
+                  zIndex: 1,
+                  boxShadow: "2px 0 5px rgba(0,0,0,0.1)",
+                  "&:hover": {
+                    backgroundColor: "action.hover",
+                  },
+                }}
+              >
+                <ChevronLeftIcon />
+              </IconButton>
+            )}
+
+            {/* Вміст панелі */}
+            <Box sx={{ height: "100%", overflow: "auto" }}>
+              {/* Заголовок та пошук */}
+              <Stack
+                sx={{
+                  backgroundColor: "background.surface",
+                  px: { xs: 2, md: 2 },
+                  py: 2,
+                  borderBottom: "1px solid",
+                  borderColor: "divider",
+                }}
+              >
+                <HeaderSection />
+                <Search len={data.length} />
+              </Stack>
+
+              {/* Фільтри та список карток */}
+              <Stack
+                spacing={2}
+                sx={{ px: { xs: 2, md: 2 }, pt: 2, minHeight: 0 }}
+              >
+                <Filters category={category} setCategory={setCategory} />
+                <Stack spacing={2} sx={{ overflow: "auto", pb: 2 }}>
+                  {data.map((value) => (
+                    <RampCard key={value.id} structure={value} />
+                  ))}
+
+                  {/* Індикатор наявності інклюзивних місць */}
+                  {inclusiveCoordinates.length > 0 && (
+                    <Box
+                      sx={{
+                        p: 2,
+                        bgcolor: "background.level2",
+                        borderRadius: "sm",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
+                      <div>
+                        Знайдено інклюзивних місць:{" "}
+                        {inclusiveCoordinates.length}
+                      </div>
+                      <button onClick={clearInclusivePlaces}>Очистити</button>
+                    </Box>
+                  )}
+                </Stack>
+              </Stack>
+            </Box>
+          </SwipeableDrawer>
         </Box>
       </div>
     </>
