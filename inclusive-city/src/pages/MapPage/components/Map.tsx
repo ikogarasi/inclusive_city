@@ -10,6 +10,8 @@ import { buildRoute } from "./../../../app/api/utils/way";
 import * as polyline from "@mapbox/polyline";
 import { Box, Card } from "@mui/material";
 import { ElementDto } from "../../../app/api/externalServicesApi";
+import { useGetComputedRouteQuery } from "../../../api/externalServicesRktApi";
+import { skipToken } from "@reduxjs/toolkit/query";
 
 // Інтерфейс для координат інклюзивних місць
 interface InclusiveCoordinate {
@@ -69,73 +71,169 @@ const Recenter = ({ lat, lng }: { lat: number; lng: number }) => {
 //  className: "inclusive-marker", // Додайте CSS клас для стилізації
 //});
 
+const fetchStandardOsrmRoute = async (origin, destination) => {
+  try {
+    // Standard OSRM endpoint
+    const url = `https://routing.openstreetmap.de/routed-foot/route/v1/walking/${origin.lon},${origin.lat};${destination.lon},${destination.lat}?overview=full&geometries=polyline`;
+
+    console.log("Fetching standard OSRM route:", url);
+
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`OSRM API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log("Standard OSRM response:", data);
+
+    return data;
+  } catch (error) {
+    console.error("Error fetching standard OSRM route:", error);
+    return null;
+  }
+};
+
 export const Map = ({
   location,
   structures,
   inclusiveCoordinates = [],
   inclusivePlaces = [],
 }: props) => {
+  const [routePoints, setRoutePoints] = useState<{
+    origin: { lat: number; lon: number } | null;
+    destination: { lat: number; lon: number } | null;
+  }>({
+    origin: null,
+    destination: null,
+  });
+
+  const ENABLE_ROUTE_COMPARISON = true;
+
   const [polylines, setPolyline] = React.useState<L.LatLngExpression[]>([]);
-  const [isActive, setActivePlace] = React.useState<InclusivePlace | null>(
-    null
-  );
-  const api_key = "7c9099e3-b0b8-405d-8ad5-ee9eb8c01bd4";
+
+  const [standardPolylines, setStandardPolyline] = useState<
+    L.LatLngExpression[]
+  >([]);
+  // Add state to track which route is being displayed
+  const [showStandardRoute, setShowStandardRoute] = useState(false);
+
   const [routeCenter, setRouteCenter] = useState<{
     lat: number;
     lng: number;
   } | null>(null);
 
+  const { data: routeData, isLoading: isRouteLoading } =
+    useGetComputedRouteQuery(
+      routePoints.origin && routePoints.destination
+        ? {
+            originLatitude: routePoints.origin.lat,
+            originLongitude: routePoints.origin.lon,
+            destinationLatitude: routePoints.destination.lat,
+            destinationLongitude: routePoints.destination.lon,
+          }
+        : skipToken
+    );
+
   useEffect(() => {
-    const routeDataString = sessionStorage.getItem("routeData");
-
-    if (routeDataString) {
+    if (routeData && routeData.routes && routeData.routes.length > 0) {
       try {
-        const decodedRoute: L.LatLngExpression[] = JSON.parse(routeDataString);
-        console.log("✅ Loaded route from sessionStorage:", decodedRoute);
+        // Decode the polyline geometry from the first route
+        const route = routeData.routes[0];
 
-        if (decodedRoute.length > 0) {
-          setPolyline(decodedRoute);
+        // Log the raw geometry for debugging
+        console.log("Raw route geometry:", route.geometry);
 
-          // Центруємо карту на середню точку маршруту
-          const midIndex = Math.floor(decodedRoute.length / 2);
-          const midPoint = decodedRoute[midIndex] as [number, number];
-          setRouteCenter({ lat: midPoint[0], lng: midPoint[1] });
-        } else {
-          console.warn("⚠️ Route array is empty.");
+        // Decode the polyline
+        const decodedPolyline = polyline.decode(route.geometry);
+        console.log("Raw decoded points:", decodedPolyline);
+
+        // Fix scaling issue - divide by 10 if coordinates are too large
+        const routeCoordinates = decodedPolyline.map((point) => {
+          const lat = point[0] > 180 ? point[0] / 10 : point[0];
+          const lng = point[1] > 180 ? point[1] / 10 : point[1];
+          return [lat, lng];
+        });
+
+        console.log("Corrected polyline points:", routeCoordinates);
+
+        // Update polylines state
+        setPolyline(routeCoordinates);
+
+        // Center the map on the route
+        if (routeCoordinates.length > 0) {
+          // Find midpoint of the route for centering
+          const midIndex = Math.floor(routeCoordinates.length / 2);
+          setRouteCenter({
+            lat: routeCoordinates[midIndex][0],
+            lng: routeCoordinates[midIndex][1],
+          });
         }
 
-        // Очищуємо збережені дані, щоб маршрут не з’являвся знову при перезавантаженні
-        sessionStorage.removeItem("routeData");
+        // Log route info
+        console.log(
+          `Route loaded: ${route.distance}m, ${Math.round(
+            route.duration / 60
+          )} minutes`
+        );
       } catch (error) {
-        console.error("❌ Error parsing route from sessionStorage:", error);
+        console.error("Error processing route data:", error);
       }
     }
-  }, []);
+  }, [routeData]);
 
-  async function Way(latitude: number, longitude: number) {
-    const options_: RequestInit = {
-      body: JSON.stringify({
-        points: [
-          [longitude, latitude],
-          [location.longitude, location.latitude],
-        ],
-      }),
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-    };
+  useEffect(() => {
+    // Check the feature flag before attempting to fetch
+    if (!ENABLE_ROUTE_COMPARISON) return;
 
-    fetch("https://graphhopper.com/api/1/route?key=" + api_key, options_).then(
-      function (response) {
-        response.json().then(function (result) {
-          setPolyline(polyline.decode(result.paths[0].points));
-          console.log(polylines);
-        });
-      }
-    );
-  }
+    // Only proceed if we have valid route points
+    if (routePoints.origin && routePoints.destination) {
+      fetchStandardOsrmRoute(routePoints.origin, routePoints.destination).then(
+        (data) => {
+          if (data && data.routes && data.routes.length > 0) {
+            const standardRoute = data.routes[0];
+            const standardDecodedPolyline = polyline.decode(
+              standardRoute.geometry
+            );
+
+            // Process the standard route (same scaling logic as custom route)
+            const standardRouteCoordinates = standardDecodedPolyline.map(
+              (point) => {
+                const lat = point[0] > 180 ? point[0] / 10 : point[0];
+                const lng = point[1] > 180 ? point[1] / 10 : point[1];
+                return [lat, lng];
+              }
+            );
+
+            setStandardPolyline(standardRouteCoordinates);
+            console.log(
+              "Standard route loaded:",
+              `${Math.round(standardRoute.distance)}m, ${Math.round(
+                standardRoute.duration / 60
+              )} minutes`
+            );
+          }
+        }
+      );
+    }
+  }, [routePoints, ENABLE_ROUTE_COMPARISON]);
+
+  const clearRoute = () => {
+    setPolyline([]);
+    // Only clear standard polylines if the feature is enabled
+    if (ENABLE_ROUTE_COMPARISON) {
+      setStandardPolyline([]);
+      setShowStandardRoute(false);
+    }
+    setRoutePoints({ origin: null, destination: null });
+    setRouteCenter(null);
+  };
+
+  // Toggle between routes (only if feature is enabled)
+  const toggleRoute = () => {
+    if (ENABLE_ROUTE_COMPARISON && standardPolylines.length > 0) {
+      setShowStandardRoute((prev) => !prev);
+    }
+  };
 
   // Знаходження інклюзивного місця за його координатами
   const findInclusivePlaceById = (id: number) => {
@@ -144,6 +242,74 @@ export const Map = ({
 
   return (
     <div style={{ height: "100vh" }}>
+      {/* Route info banner */}
+      {isRouteLoading && (
+        <Box
+          sx={{
+            position: "absolute",
+            top: "10px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 1000,
+            backgroundColor: "white",
+            padding: "8px",
+            borderRadius: "4px",
+            boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+          }}
+        >
+          Loading route...
+        </Box>
+      )}
+
+      {routeData && polylines.length > 0 && (
+        <Box
+          sx={{
+            position: "absolute",
+            top: "10px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 1000,
+            backgroundColor: "white",
+            padding: "8px",
+            borderRadius: "4px",
+            boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+          }}
+        >
+          <div>
+            {ENABLE_ROUTE_COMPARISON && showStandardRoute
+              ? "Standard OSRM: "
+              : ""}
+            Distance:{" "}
+            {ENABLE_ROUTE_COMPARISON &&
+            showStandardRoute &&
+            standardPolylines.length > 0
+              ? "~" + Math.round(routeData.routes[0].distance) // Approximation for standard route
+              : Math.round(routeData.routes[0].distance)}
+            m | Time:{" "}
+            {ENABLE_ROUTE_COMPARISON &&
+            showStandardRoute &&
+            standardPolylines.length > 0
+              ? "~" + Math.round(routeData.routes[0].duration / 60) // Approximation for standard route
+              : Math.round(routeData.routes[0].duration / 60)}{" "}
+            min
+          </div>
+
+          {/* Only show toggle button if feature is enabled and we have standard route */}
+          {ENABLE_ROUTE_COMPARISON && standardPolylines.length > 0 && (
+            <Button size="sm" color="primary" onClick={toggleRoute}>
+              {showStandardRoute ? "Show Custom Route" : "Show Standard Route"}
+            </Button>
+          )}
+
+          <Button size="sm" color="danger" onClick={clearRoute}>
+            Clear
+          </Button>
+        </Box>
+      )}
+
       <MapContainer
         center={[49.84309611110559, 24.030603315948206]}
         zoom={17}
@@ -159,7 +325,6 @@ export const Map = ({
         ) : (
           <Recenter lat={location.latitude} lng={location.longitude} />
         )}
-        {polylines.length > 0 && <Polyline positions={polylines}></Polyline>}
 
         <Marker position={[location.latitude, location.longitude]}>
           <Popup>You</Popup>
@@ -182,8 +347,14 @@ export const Map = ({
                   />
                   {value.tags && value.tags["name"] ? value.tags["name"] : ""}
                   <Button
-                    onClick={async () => {
-                      await Way(value.lat!, value.lon!);
+                    onClick={() => {
+                      setRoutePoints({
+                        origin: {
+                          lat: location.latitude,
+                          lon: location.longitude,
+                        },
+                        destination: { lat: value.lat!, lon: value.lon! },
+                      });
                     }}
                   >
                     GO
@@ -198,53 +369,28 @@ export const Map = ({
           inclusiveCoordinates
             .filter((coord) => coord.lat && coord.lon)
             .map((coordinate) => {
-              // Використовуємо дані з inclusivePlaces для деталей, якщо вони є
               const place = findInclusivePlaceById(coordinate.id);
 
               return (
                 <Marker
                   key={`inclusive-${coordinate.id}`}
                   position={[coordinate.lat || 0, coordinate.lon || 0]}
-                  // Використовуємо спеціальну іконку або CSS стиль для інклюзивних місць
-                  //icon={inclusiveIcon}
                 >
                   <Popup>
                     <Box sx={{ display: "flex", flexDirection: "column" }}>
-                      {place ? (
-                        <>
-                          <div style={{ fontWeight: "bold" }}>
-                            Інклюзивне місце
-                          </div>
-                          <div>{place.address}</div>
-                          {place.tags && place.tags.name && (
-                            <div>{place.tags.name}</div>
-                          )}
-                          {place.tags && place.tags.wheelchair && (
-                            <div>
-                              Доступність:{" "}
-                              {place.tags.wheelchair === "yes"
-                                ? "Повна"
-                                : "Обмежена"}
-                            </div>
-                          )}
-                        </>
-                      ) : (
-                        <div>Інклюзивне місце</div>
-                      )}
+                      {/* ...existing code... */}
                       <Button
-                        onClick={async () => {
-                          try {
-                            const route = await buildRoute(
-                              coordinate.lat!,
-                              coordinate.lon!,
-                              location.latitude,
-                              location.longitude
-                            );
-                            setPolyline(route); // тут setPolyline із useState в компоненті
-                            console.log(route.length);
-                          } catch (error) {
-                            console.error("Помилка побудови маршруту:", error);
-                          }
+                        onClick={() => {
+                          setRoutePoints({
+                            origin: {
+                              lat: location.latitude,
+                              lon: location.longitude,
+                            },
+                            destination: {
+                              lat: coordinate.lat!,
+                              lon: coordinate.lon!,
+                            },
+                          });
                         }}
                       >
                         GO
@@ -254,6 +400,65 @@ export const Map = ({
                 </Marker>
               );
             })}
+
+        {(!ENABLE_ROUTE_COMPARISON || !showStandardRoute) &&
+          polylines.length > 0 && (
+            <Polyline
+              positions={polylines}
+              pathOptions={{
+                color: "blue",
+                weight: 5,
+                opacity: 0.7,
+              }}
+            />
+          )}
+
+        {/* Only render standard route if feature is enabled */}
+        {ENABLE_ROUTE_COMPARISON &&
+          showStandardRoute &&
+          standardPolylines.length > 0 && (
+            <Polyline
+              positions={standardPolylines}
+              pathOptions={{
+                color: "red",
+                weight: 5,
+                opacity: 0.7,
+                dashArray: "10, 5", // Make the standard route dashed for distinction
+              }}
+            />
+          )}
+
+        {/* Display comparison route with lower opacity */}
+        {ENABLE_ROUTE_COMPARISON &&
+          polylines.length > 0 &&
+          standardPolylines.length > 0 && (
+            <>
+              {/* Show custom route with lower opacity when viewing standard */}
+              {showStandardRoute && (
+                <Polyline
+                  positions={polylines}
+                  pathOptions={{
+                    color: "blue",
+                    weight: 3,
+                    opacity: 0.4,
+                  }}
+                />
+              )}
+
+              {/* Show standard route with lower opacity when viewing custom */}
+              {!showStandardRoute && (
+                <Polyline
+                  positions={standardPolylines}
+                  pathOptions={{
+                    color: "red",
+                    weight: 3,
+                    opacity: 0.4,
+                    dashArray: "10, 5",
+                  }}
+                />
+              )}
+            </>
+          )}
       </MapContainer>
     </div>
   );

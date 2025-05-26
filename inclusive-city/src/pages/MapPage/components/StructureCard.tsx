@@ -33,14 +33,11 @@ export default function StructureCard({
   return (
     <Card
       variant="outlined"
-      orientation={{ xs: "vertical", sm: "horizontal" }}
       sx={{
         bgcolor: "neutral.softBg",
         display: "flex",
         flexDirection: { xs: "column", sm: "row" },
-        width: "100%",
-        maxWidth: 500,
-        minWidth: 0,
+        minWidth: 500,
         overflow: "hidden",
         boxSizing: "border-box",
         "&:hover": {
