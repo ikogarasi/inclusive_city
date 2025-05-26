@@ -8,9 +8,27 @@ import Stack from "@mui/joy/Stack";
 import Slider, { sliderClasses } from "@mui/joy/Slider";
 import FilterAltOutlined from "@mui/icons-material/FilterAltOutlined";
 import OrderBy from "./OrderBy";
-import { DialogTitle, Drawer, MenuItem, Select } from "@mui/material";
+import {
+  Checkbox,
+  DialogTitle,
+  Drawer,
+  FormControlLabel,
+  MenuItem,
+  Select,
+} from "@mui/material";
 import { Dispatch } from "react";
-import { useGetAllCategoriesQuery } from "../../../api/structureRtkApi";
+//import { useGetAllCategoriesQuery } from "../../../api/structureRtkApi";
+
+const localCategories = [
+  "Restaurant",
+  "School",
+  "University",
+  "Hospital",
+  "Toilets",
+  "Police",
+  "Pharmacy",
+  "Marketplace",
+];
 
 function valueText(value: number) {
   return `${value.toLocaleString("en-US")}km`;
@@ -19,10 +37,21 @@ function valueText(value: number) {
 interface Props {
   category: string;
   setCategory: Dispatch<React.SetStateAction<string>>;
+  around: number;
+  setAround: Dispatch<React.SetStateAction<number>>;
+  isWheelChair: boolean;
+  setIsWheelChair: Dispatch<React.SetStateAction<boolean>>;
 }
 
-export default function Filters({ category, setCategory }: Props) {
-  const { data: categories = [] } = useGetAllCategoriesQuery();
+export default function Filters({
+  category,
+  setCategory,
+  around,
+  setAround,
+  isWheelChair,
+  setIsWheelChair,
+}: Props) {
+  const categories = localCategories; // useGetAllCategoriesQuery().data || [];
 
   const [open, setOpen] = React.useState(false);
   return (
@@ -63,23 +92,27 @@ export default function Filters({ category, setCategory }: Props) {
               sx={{ minWidth: 150 }}
             >
               <MenuItem value={"All"}>All</MenuItem>
-              {categories.map((value) => (
-                <MenuItem value={value.name}>{value.name}</MenuItem>
+              {categories.map((value, i) => (
+                <MenuItem key={i} value={value}>
+                  {value}
+                </MenuItem>
               ))}
             </Select>
           </Box>
           <FormControl>
-            <FormLabel>Distance range {"(km)"}</FormLabel>
+            <FormLabel>Distance (km)</FormLabel>
             <Slider
-              defaultValue={[0.5, 2]}
+              value={around}
+              onChange={(_, value) => setAround(Number(value))}
+              defaultValue={1}
               step={0.5}
-              min={0}
+              min={0.5}
               max={10}
               getAriaValueText={valueText}
               valueLabelDisplay="auto"
               valueLabelFormat={valueText}
               marks={[
-                { value: 0, label: "0" },
+                { value: 0.5, label: "0.5" },
                 { value: 5, label: "5" },
                 { value: 10, label: "10" },
               ]}
@@ -93,6 +126,16 @@ export default function Filters({ category, setCategory }: Props) {
               }}
             />
           </FormControl>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={isWheelChair}
+                onChange={(_, checked) => setIsWheelChair(checked)}
+              />
+            }
+            label="Тільки з доступністю для інвалідних візків"
+            sx={{ ml: 1 }}
+          />
         </Stack>
       </Drawer>
     </Stack>

@@ -12,16 +12,17 @@ import WorkspacePremiumRoundedIcon from "@mui/icons-material/WorkspacePremiumRou
 import FavoriteRoundedIcon from "@mui/icons-material/FavoriteRounded";
 import { StarRating } from "../../InfoPage/components/StarRating";
 import { Button } from "@mui/joy";
-import { GetStructureDto } from "../../../app/api/structureApi";
 import { useNavigate } from "react-router-dom";
+import { ElementDto } from "../../../app/api/externalServicesApi";
+import { Box } from "@mui/material";
 
 type RentalCardProps = {
   liked?: boolean;
   theBest?: boolean;
-  structure: GetStructureDto;
+  structure: ElementDto;
 };
 
-export default function RampCard({
+export default function StructureCard({
   structure,
   theBest = false,
   liked = false,
@@ -32,21 +33,27 @@ export default function RampCard({
   return (
     <Card
       variant="outlined"
-      orientation="horizontal"
       sx={{
         bgcolor: "neutral.softBg",
         display: "flex",
         flexDirection: { xs: "column", sm: "row" },
+        minWidth: 500,
+        overflow: "hidden",
+        boxSizing: "border-box",
         "&:hover": {
           boxShadow: "lg",
           borderColor: "var(--joy-palette-neutral-outlinedDisabledBorder)",
         },
+        m: { xs: 1, sm: 2 },
       }}
     >
       <CardOverflow
         sx={{
-          mr: { xs: "var(--CardOverflow-offset)", sm: 0 },
+          flex: { xs: "0 0 auto", sm: "0 0 160px" },
+          width: { xs: "100%", sm: 160 },
+          minWidth: { xs: "100%", sm: 120 },
           mb: { xs: 0, sm: "var(--CardOverflow-offset)" },
+          mr: { xs: 0, sm: "var(--CardOverflow-offset)" },
           "--AspectRatio-radius": {
             xs: "calc(var(--CardOverflow-radius) - var(--variant-borderWidth, 0px)) calc(var(--CardOverflow-radius) - var(--variant-borderWidth, 0px)) 0 0",
             sm: "calc(var(--CardOverflow-radius) - var(--variant-borderWidth, 0px)) 0 0 calc(var(--CardOverflow-radius) - var(--variant-borderWidth, 0px))",
@@ -57,11 +64,21 @@ export default function RampCard({
           ratio="1"
           flex
           sx={{
-            minWidth: { sm: 120, md: 160 },
-            "--AspectRatio-maxHeight": { xs: "160px", sm: "9999px" },
+            minWidth: { xs: "100%", sm: 120, md: 160 },
+            maxHeight: { xs: 180, sm: 160 },
+            borderRadius: 2,
+            overflow: "hidden",
           }}
         >
-          <img alt="" src={structure.imageUrl} />
+          <img
+            alt=""
+            src={
+              structure.imageUrls && structure.imageUrls.length > 0
+                ? structure.imageUrls[0]
+                : "/placeholder.png"
+            }
+            style={{ objectFit: "cover", width: "100%", height: "100%" }}
+          />
           <Stack
             alignItems="center"
             direction="row"
@@ -94,26 +111,38 @@ export default function RampCard({
           </Stack>
         </AspectRatio>
       </CardOverflow>
-      <CardContent>
+      <CardContent
+        sx={{
+          minWidth: 0,
+          flex: 1,
+          overflow: "hidden",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          p: { xs: 1.5, sm: 2 },
+        }}
+      >
         <Stack
           spacing={1}
           direction="row"
           justifyContent="space-between"
           alignItems="flex-start"
         >
-          <div>
-            <Typography level="body-sm">{structure.category}</Typography>
-            <Typography level="title-md">
+          <Box sx={{ minWidth: 0, maxWidth: "100%" }}>
+            <Typography level="body-sm" noWrap>
+              {(structure.tags && structure.tags["amenity"]) || ""}
+            </Typography>
+            <Typography level="title-md" noWrap>
               <Link
                 overlay
                 underline="none"
                 href="#interactive-card"
                 sx={{ color: "text.primary" }}
               >
-                {structure.name}
+                {(structure.tags && structure.tags["name"]) || "no name"}
               </Link>
             </Typography>
-          </div>
+          </Box>
           <IconButton
             variant="plain"
             size="sm"
@@ -129,28 +158,30 @@ export default function RampCard({
         </Stack>
 
         <Stack
-          spacing="0.55rem 1rem"
+          spacing={1}
           direction="row"
           useFlexGap
           flexWrap="wrap"
-          sx={{ my: 0.25 }}
+          sx={{
+            my: 0.5,
+            maxWidth: "100%",
+            alignItems: "center",
+          }}
         >
-          <Typography level="body-md" sx={{ paddingTop: "15px" }}>
-            {structure.distanceInKm?.toFixed(2)} km.
-          </Typography>
-          {/*<Typography level="body-md" startDecorator={<FmdGoodRoundedIcon />}>
-            Lviv
-          </Typography>*/}
           <Button
             variant="outlined"
             sx={{
               mt: 1,
-              maxHeight: "0px",
-              maxWidth: "700px",
+              maxHeight: 36,
+              maxWidth: { xs: "100%", sm: 200 },
               ml: 2,
               fontSize: "15px",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              flex: 1,
             }}
-            onClick={() => navigate("/info/" + structure.id)}
+            onClick={() => navigate(`/info/${structure.type}/${structure.id}`)}
           >
             View more
           </Button>
@@ -160,7 +191,7 @@ export default function RampCard({
             readonly={true}
             sizeText="20px"
             idStructure={""}
-            rating={Math.ceil(structure.rating)}
+            rating={Math.round(structure.rating || 0)}
           />
         </Stack>
       </CardContent>
