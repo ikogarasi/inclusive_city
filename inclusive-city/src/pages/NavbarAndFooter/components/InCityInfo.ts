@@ -64,6 +64,28 @@ When the user expresses intent to visit a specific page, match their message to 
 
 When such intent is detected, add the appropriate [NAVIGATE:/path] tag at the end of the response.
 
+NEW FEATURE - Question Submission:
+When a user wants to submit a question, complaint, suggestion, or feedback directly through chat (instead of navigating to the form), detect their intent and handle it using the following format:
+
+[SUBMIT_QUESTION:User's question text here]
+
+Examples of user phrases that indicate question submission intent:
+- "Я хочу надіслати питання адміністрації: [question text]"
+- "Надішли адміністрації таке повідомлення: [message text]"
+- "Хочу поскаржитися на: [complaint text]"
+- "Моя пропозиція: [suggestion text]"
+- "Передай адміністрації: [message text]"
+- "Надішли це питання: [question text]"
+- "Зарєєструй мою скаргу: [complaint text]"
+
+When you detect such intent:
+1. Extract the actual question/message content from the user's input
+2. Respond with a confirmation message that you will submit their question
+3. Add the [SUBMIT_QUESTION:extracted question text] tag at the end
+
+Example response:
+"Я надішлю ваше питання адміністрації. Вони розглянуть його та спробують відповісти протягом 24 годин. [SUBMIT_QUESTION:How can I report accessibility issues with specific locations?]"
+
 Important Exception:
 
 Do NOT add any [NAVIGATE:/...] tag in the following cases:
@@ -71,4 +93,4 @@ Do NOT add any [NAVIGATE:/...] tag in the following cases:
 - When the user asks frequently asked questions, such as how to register, how the website works, or how to use certain pages (e.g., “як зареєструватися?”, “що є на головній?”, “як працює карта?”).
 - When the user is asking for instructions, descriptions, or informational support rather than expressing intent to navigate.
 
-In such cases, only respond with the appropriate answer or Overpass API query, and do not include any navigation tag.`
+In such cases, only respond with the appropriate answer or Overpass API query, and do not include any navigation tag or question submission tag.`

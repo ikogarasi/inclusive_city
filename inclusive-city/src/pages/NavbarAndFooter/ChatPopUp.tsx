@@ -21,11 +21,14 @@ import {
   navigateToMapPage,
 } from "./../../app/overpassService";
 import { buildRoute } from "./../../app/api/utils/way";
+import { useAppSelector } from "../../app/hooks";
+import { speakUp } from "../../app/useTexttoSpeech";
 // @ts-ignore
 import * as polyline from "@mapbox/polyline";
 import { useNavigate } from "react-router-dom";
-// Імпорт функцій для роботи з мовою
-import { speakUp } from "../../app/useTexttoSpeech";
+import { useSubmitQuestionMutation } from "../../api/quesionsRtkApi";
+
+
 
 export const ChatPopUp = () => {
   return (
@@ -56,6 +59,10 @@ function PopupWithTrigger(props: PopupProps & { buttonLabel: string }) {
 
   const chatBodyRef = useRef<HTMLDivElement | null>(null);
 
+  const userData = useAppSelector((state) => state.user);
+
+  const [submitQuestion] = useSubmitQuestionMutation();
+
   const navigate = useNavigate();
 
   const startStopListening = () => {
@@ -81,6 +88,17 @@ function PopupWithTrigger(props: PopupProps & { buttonLabel: string }) {
       return false;
     }
   });
+
+  const handleQuestionSubmission = async (questionText: string) => {
+    try {
+      // Використовуємо той самий мутацію, що і в SendQuestion компоненті
+      await submitQuestion({ description: questionText });
+      return true;
+    } catch (error) {
+      console.error("Error submitting question:", error);
+      return false;
+    }
+  };
 
   const [anchor, setAnchor] = React.useState<null | HTMLElement>(null);
 
@@ -195,13 +213,60 @@ function PopupWithTrigger(props: PopupProps & { buttonLabel: string }) {
 
       const navigationTag = apiResponseText.match(/\[NAVIGATE:(.*?)\]/i);
 
+      const questionTag = apiResponseText.match(/\[SUBMIT_QUESTION:(.*?)\]/s);
+
       apiResponseText = apiResponseText
         .replace(/\[NAVIGATE:(.*?)\]/i, "")
+        .replace(/\[SUBMIT_QUESTION:(.*?)\]/s, "")
         .trim();
+      
+        if (questionTag) {
+          const questionText = questionTag[1].trim();
 
-      //  Перехід на сторінку
+          // Перевірка авторизації
+          if (userData.userData.role !== "User") {
+            updateHistory(
+              "Для того, щоб надіслати питання, необхідно зареєструватися чи увійти у свій профіль на нашому сайті."
+            );
+            return;
+          }
+
+          updateHistory("Надсилаю ваше питання адміністрації...");
+
+          try {
+            const success = await handleQuestionSubmission(questionText);
+
+            if (success) {
+              updateHistory(
+                "Ваше питання успішно надіслано! Адміністрація розгляне його та спробує відповісти якнайшвидше (зазвичай протягом 24 годин)."
+              );
+            } else {
+              updateHistory(
+                "На жаль, сталася помилка при надсиланні питання. Спробуйте ще раз або скористайтеся формою на сторінці 'Запитання та відповіді'."
+              );
+            }
+          } catch (error) {
+            console.error("Error submitting question:", error);
+            updateHistory(
+              "На жаль, сталася помилка при надсиланні питання. Спробуйте ще раз або скористайтеся формою на сторінці 'Запитання та відповіді'."
+            );
+          }
+
+          return;
+        }
+
       if (navigationTag) {
         const path = navigationTag[1].trim();
+
+        // Перевірка авторизації для сторінки /message
+        if (path === "/message") {
+
+          if (userData.userData.role !== "User") {
+            updateHistory("Для того, щоб задати питання або написати зауваження необхідно зареєструватися чи увійти у свій профіль на нашому сайті)");
+            return;
+          }
+        }
+
         updateHistory(`Переходжу на сторінку: ${path}...`);
 
         setTimeout(() => {
@@ -209,6 +274,8 @@ function PopupWithTrigger(props: PopupProps & { buttonLabel: string }) {
         }, 1000);
         return;
       }
+
+
 
       // Перевіряємо, чи є в повідомленні ключові слова для побудови маршруту
       const routeKeywords = [
@@ -695,7 +762,7 @@ function PopupWithTrigger(props: PopupProps & { buttonLabel: string }) {
 }
 
 const Popup = styled(BasePopup)`
-  z-index: 10;
+  z-index: drawer;
 `;
 const PopupBody = styled("div")(
   ({ theme }: { theme: Theme }) => `
