@@ -55,7 +55,7 @@ export const StarRating: React.FC<{
   }
 
   const [value, setValue] = React.useState<number>(
-    props.rating === 0 ? 1 : props.rating
+    props.rating === 0 ? null : props.rating
   );
   const [hover, setHover] = React.useState(-1);
   const [visible, setVisible] = React.useState(false);
@@ -139,9 +139,9 @@ export const StarRating: React.FC<{
       >
         <StyledRating
           name="highlight-selected-only"
-          defaultValue={value}
+          value={value}
           IconContainerComponent={IconContainer}
-          getLabelText={(value: number) => customIcons[value].label}
+          getLabelText={(v: number) => customIcons[v]?.label || "Not rated"}
           onChange={(event, newValue) => {
             updateLabel(newValue);
             setVisible(true);
@@ -153,7 +153,7 @@ export const StarRating: React.FC<{
           size="large"
           readOnly={props.readonly}
         />
-        {value !== null && (
+        {value !== null && customIcons[hover !== -1 ? hover : value] ? (
           <Typography
             fontSize={props.sizeText}
             fontWeight="md"
@@ -161,6 +161,16 @@ export const StarRating: React.FC<{
             sx={{ ml: 2 }}
           >
             {customIcons[hover !== -1 ? hover : value].label}
+          </Typography>
+        ) : (
+          <Typography
+            fontSize={props.sizeText}
+            fontWeight="md"
+            marginLeft={2}
+            sx={{ ml: 2 }}
+            color="text.secondary"
+          >
+            Not rated
           </Typography>
         )}
       </Box>

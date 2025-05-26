@@ -2,28 +2,26 @@ import { Avatar, Button, Typography } from "@mui/joy";
 import { Box, Divider } from "@mui/material";
 import TwoSidedLayout from "./TwoSlideLayout";
 import { StarRating } from "./StarRating";
-import { useGetReviewsForStructureQuery } from "../../../api/reviewRtkApi";
 import { useNavigate, useParams } from "react-router-dom";
-import { useGetStructureQuery } from "../../../api/structureRtkApi";
-import { useEffect, useState } from "react";
+import { useGetStructureByIdQuery } from "../../../api/externalServicesRktApi"; // <-- add import
 
 export const ReviewPage = () => {
-  const { structureId } = useParams();
-  const { data: structure, isFetching } = useGetStructureQuery({
-    id: structureId ?? "",
-    longitude: 0,
-    latitude: 0,
+  const { type, structureId } = useParams();
+  const { data: structure } = useGetStructureByIdQuery({
+    osmId: Number(structureId) ?? 0,
+    type: type ?? "",
+    shouldRetrieveRating: true,
+    shouldGetImages: true,
+    shouldRetrieveReviews: true,
   });
-  const { data: reviewsData = [] } = useGetReviewsForStructureQuery(
-    structureId ?? "",
-    { skip: !structure || isFetching }
-  );
 
   const navigate = useNavigate();
 
+  const imageUrl = structure?.imageUrls?.[0] || "/placeholder.png";
+
   return (
     <Box sx={{ paddingBottom: 5 }}>
-      <TwoSidedLayout imgUrl={structure?.imageUrl ?? ""}>
+      <TwoSidedLayout imgUrl={imageUrl}>
         <Box
           sx={{
             display: "flex",
@@ -37,15 +35,7 @@ export const ReviewPage = () => {
             fontSize="clamp(1.875rem, 1.3636rem + 2.1818vw, 3rem)"
             marginBottom={1}
           >
-            {structure?.name}
-          </Typography>
-          <Typography
-            fontSize="lg"
-            textColor="text.secondary"
-            lineHeight="lg"
-            marginBottom={3}
-          >
-            {structure?.description}
+            {structure?.tags?.name || "no name"}
           </Typography>
           <Button size="lg" onClick={() => navigate("/map")} color="success">
             Return to explore more
@@ -55,7 +45,7 @@ export const ReviewPage = () => {
               readonly={false}
               sizeText="30px"
               idStructure={structureId ?? ""}
-              rating={Math.ceil(structure.rating)}
+              rating={Math.ceil(structure?.rating || 0)}
             />
           )}
         </Box>
@@ -70,7 +60,7 @@ export const ReviewPage = () => {
         }}
       >
         <Typography level="h2">The latest comments:</Typography>
-        {reviewsData.map((value) => (
+        {structure?.reviews?.map((value) => (
           <Box sx={{ marginLeft: 5, marginTop: 3 }} key={value.id}>
             <Typography
               startDecorator={
@@ -81,16 +71,16 @@ export const ReviewPage = () => {
               <b>{value.username}</b>
             </Typography>
             <Typography sx={{ marginTop: 2 }}>
-              <i>{new Date(value.createdDate).toDateString()}</i>
+              <i>{value.createdAt?.toDateString()}</i>
             </Typography>
             <StarRating
               readonly={true}
               sizeText="30px"
               idStructure={structureId ?? ""}
-              rating={value.rating}
+              rating={value.rate || 0}
             />
             <Typography textColor="text.secondary" sx={{ marginTop: 2 }}>
-              {value.description}
+              {value.comment}
             </Typography>
           </Box>
         ))}

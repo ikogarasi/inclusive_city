@@ -2,8 +2,6 @@ import { MapContainer } from "react-leaflet/MapContainer";
 import { Popup, TileLayer, useMap, Marker, Polyline } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { useEffect, useState } from "react";
-import { GetStructureDto } from "../../../app/api/structureApi";
-import { GraphHopperOptimization } from "graphhopper-ts-client";
 import L from "leaflet";
 import { Button } from "@mui/joy";
 import React from "react";
@@ -11,6 +9,7 @@ import { buildRoute } from "./../../../app/api/utils/way";
 // @ts-ignore
 import * as polyline from "@mapbox/polyline";
 import { Box, Card } from "@mui/material";
+import { ElementDto } from "../../../app/api/externalServicesApi";
 
 // Інтерфейс для координат інклюзивних місць
 interface InclusiveCoordinate {
@@ -45,7 +44,7 @@ interface RouteData {
 
 interface props {
   location: CurrentLocation;
-  structures: GetStructureDto[];
+  structures: ElementDto[];
   inclusiveCoordinates?: InclusiveCoordinate[];
   inclusivePlaces?: InclusivePlace[];
 }
@@ -167,30 +166,32 @@ export const Map = ({
         </Marker>
 
         {/* Відображення існуючих структур */}
-        {structures.map((value) => (
-          <Marker
-            key={`structure-${value.id}`}
-            position={[value.latitude, value.longitude]}
-          >
-            <Popup>
-              <Box sx={{ display: "flex", flexDirection: "column" }}>
-                <img
-                  alt=""
-                  src={value.imageUrl}
-                  style={{ height: "100px", width: "150px" }}
-                />
-                {value.name}{" "}
-                <Button
-                  onClick={async () => {
-                    await Way(value.latitude, value.longitude);
-                  }}
-                >
-                  GO
-                </Button>
-              </Box>
-            </Popup>
-          </Marker>
-        ))}
+        {structures
+          .filter((value) => value.lat != null && value.lon != null)
+          .map((value) => (
+            <Marker
+              key={`structure-${value.id}`}
+              position={[value.lat, value.lon]}
+            >
+              <Popup>
+                <Box sx={{ display: "flex", flexDirection: "column" }}>
+                  <img
+                    alt=""
+                    src={value.imageUrls?.[0] || "/placeholder.png"}
+                    style={{ height: "100px", width: "150px" }}
+                  />
+                  {value.tags && value.tags["name"] ? value.tags["name"] : ""}
+                  <Button
+                    onClick={async () => {
+                      await Way(value.lat!, value.lon!);
+                    }}
+                  >
+                    GO
+                  </Button>
+                </Box>
+              </Popup>
+            </Marker>
+          ))}
 
         {/* Відображення інклюзивних місць з координатами */}
         {inclusiveCoordinates &&

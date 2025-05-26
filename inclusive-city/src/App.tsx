@@ -32,13 +32,13 @@ function App() {
 
   return (
     <div className={styles.main}>
-      <ChatPopUp/>
+      <ChatPopUp />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/map" element={<MapPage />} />
         <Route path="/login" element={<SignInPage />} />
         <Route path="/signup" element={<SignUpPage />} />
-        <Route path="/info/:structureId" element={<InfoPage />} />
+        <Route path="/info/:type/:structureId" element={<InfoPage />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/message" element={<MessagePage />} />
         <Route path="/admin/add" element={<AddInfoPage />} />

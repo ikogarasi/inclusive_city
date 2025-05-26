@@ -15,9 +15,10 @@ import CssBaseline from "@mui/material/CssBaseline";
 import { Stack } from "@mui/joy";
 import HeaderSection from "./components/HeaderSection";
 import Filters from "./components/FilterSection";
-import RampCard from "./components/RampCard";
+import StructureCard from "./components/StructureCard";
 import Search from "./components/Search";
-import { useGetAllStructuresQuery } from "../../api/structureRtkApi";
+import { useGetStructuresQuery } from "../../api/externalServicesRktApi";
+import { skipToken } from "@reduxjs/toolkit/query";
 
 // Інтерфейс для координат інклюзивних місць
 interface InclusiveCoordinate {
@@ -42,7 +43,17 @@ const Puller = styled("div")(({ theme }) => ({
 
 export const MapPage = () => {
   const [category, setCategory] = useState<string>("All");
-  const [count, setCount] = useState<number>(0);
+  const [around, setAround] = useState<number>(2);
+  const [searchInput, setSearchInput] = useState<string>(""); // local input state
+  const [isWheelChair, setIsWheelChair] = useState<boolean>(false); // wheelchair filter
+
+  const [searchParams, setSearchParams] = useState<{
+    category: string;
+    around: number;
+    search: string;
+    isWheelChair: boolean;
+  } | null>(null);
+
   // Стан для зберігання інклюзивних місць
   const [inclusivePlaces, setInclusivePlaces] = useState<any[]>([]);
   // Стан для зберігання координат інклюзивних місць
@@ -58,12 +69,32 @@ export const MapPage = () => {
     display_name: "",
   });
 
-  const { data = [] } = useGetAllStructuresQuery({
-    latitude: location.latitude,
-    longitude: location.longitude,
-    count: count,
-    category: category !== "All" ? category : null,
-  });
+  const { data = { elements: [] } } = useGetStructuresQuery(
+    searchParams
+      ? {
+          latitude: location.latitude,
+          longitude: location.longitude,
+          around: searchParams.around * 1000,
+          amenity: searchParams.category !== "All" ? searchParams.category : "",
+          name: searchParams.search,
+          isWheelChair: searchParams.isWheelChair,
+          shouldRetrieveRating: true,
+          shouldGetImages: true,
+        }
+      : skipToken, // <-- import { skipToken } from "@reduxjs/toolkit/query"
+    {
+      skip: !searchParams,
+    }
+  );
+
+  const handleSearch = () => {
+    setSearchParams({
+      category,
+      around,
+      search: searchInput,
+      isWheelChair,
+    });
+  };
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(getCurrentCityName);
@@ -140,7 +171,6 @@ export const MapPage = () => {
       <div
         style={{ height: "100vh", display: "flex", flexDirection: "column" }}
       >
-        
         <Navbar />
 
         {/* Головний контейнер для карти */}
@@ -163,7 +193,7 @@ export const MapPage = () => {
           >
             <Map
               location={location}
-              structures={data}
+              structures={data.elements || []}
               inclusivePlaces={inclusivePlaces}
               inclusiveCoordinates={inclusiveCoordinates}
             />
@@ -245,7 +275,7 @@ export const MapPage = () => {
               >
                 <Puller />
                 <Typography sx={{ position: "absolute", textAlign: "center" }}>
-                  {data.length} результатів
+                  {data.elements?.length} результатів
                 </Typography>
               </Box>
             )}
@@ -285,18 +315,29 @@ export const MapPage = () => {
                 }}
               >
                 <HeaderSection />
-                <Search len={data.length} />
+                <Search
+                  len={data.elements?.length || 0}
+                  onChange={setSearchInput}
+                  onSearch={handleSearch}
+                  value={searchInput}
+                />
               </Stack>
-
               {/* Фільтри та список карток */}
               <Stack
                 spacing={2}
                 sx={{ px: { xs: 2, md: 2 }, pt: 2, minHeight: 0 }}
               >
-                <Filters category={category} setCategory={setCategory} />
+                <Filters
+                  category={category}
+                  setCategory={setCategory}
+                  around={around}
+                  setAround={setAround}
+                  isWheelChair={isWheelChair}
+                  setIsWheelChair={setIsWheelChair}
+                />
                 <Stack spacing={2} sx={{ overflow: "auto", pb: 2 }}>
-                  {data.map((value) => (
-                    <RampCard key={value.id} structure={value} />
+                  {(data.elements || []).map((value) => (
+                    <StructureCard key={value.id} structure={value} />
                   ))}
 
                   {/* Індикатор наявності інклюзивних місць */}
