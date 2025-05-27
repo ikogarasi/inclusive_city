@@ -55,6 +55,20 @@ export interface GetComputedRouteQueryParams {
   destinationLongitude: number;
 }
 
+export interface GetInclusiveInfrastructureQueryParams {
+  latitude: number;
+  longitude: number;
+  around: number;
+  toilets?: boolean;
+  busStops?: boolean;
+  kerbs?: boolean;
+  tactilePaving?: boolean;
+  ramps?: boolean;
+  shouldRetrieveRating?: boolean;
+  shouldRetrieveReviews?: boolean;
+  shouldGetImages?: boolean;
+}
+
 // Review RTK API
 export const reviewRtkApi = createApi({
   reducerPath: "overpassReviewApi",
@@ -143,6 +157,29 @@ export const structureRtkApi = createApi({
       },
       invalidatesTags: ["OverpassStructure"],
     }),
+    getInclusiveInfrastructure: build.query<
+      GetStructuresDto,
+      GetInclusiveInfrastructureQueryParams
+    >({
+      queryFn: async (params: GetInclusiveInfrastructureQueryParams) => {
+        return {
+          data: await overpassStructureClient.getInclusiveInfrastructure(
+            params.latitude,
+            params.longitude,
+            params.around,
+            params.toilets,
+            params.busStops,
+            params.kerbs,
+            params.tactilePaving,
+            params.ramps,
+            params.shouldRetrieveRating,
+            params.shouldRetrieveReviews,
+            params.shouldGetImages
+          ),
+        };
+      },
+      providesTags: ["OverpassStructure"],
+    }),
   }),
 });
 
@@ -179,6 +216,7 @@ export const {
   useGetStructuresQuery,
   useGetStructureByIdQuery,
   useUploadImagesMutation,
+  useGetInclusiveInfrastructureQuery,
 } = structureRtkApi;
 
 export const { useGetComputedRouteQuery } = routingRtkApi;

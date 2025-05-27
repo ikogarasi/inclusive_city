@@ -17,7 +17,10 @@ import HeaderSection from "./components/HeaderSection";
 import Filters from "./components/FilterSection";
 import StructureCard from "./components/StructureCard";
 import Search from "./components/Search";
-import { useGetStructuresQuery } from "../../api/externalServicesRktApi";
+import {
+  useGetInclusiveInfrastructureQuery,
+  useGetStructuresQuery,
+} from "../../api/externalServicesRktApi";
 import { skipToken } from "@reduxjs/toolkit/query";
 
 // Інтерфейс для координат інклюзивних місць
@@ -28,7 +31,7 @@ interface InclusiveCoordinate {
 }
 
 // Ширина бічної панелі
-const drawerWidth = 350;
+const drawerWidth = 550;
 
 // Стилізована "ручка" для перетягування
 const Puller = styled("div")(({ theme }) => ({
@@ -47,6 +50,20 @@ export const MapPage = () => {
   const [searchInput, setSearchInput] = useState<string>(""); // local input state
   const [isWheelChair, setIsWheelChair] = useState<boolean>(false); // wheelchair filter
 
+  const [showInclusiveFeatures, setShowInclusiveFeatures] =
+    useState<boolean>(false);
+  const [inclusiveFilters, setInclusiveFilters] = useState({
+    toilets: true,
+    busStops: true,
+    kerbs: true,
+    tactilePaving: true,
+    ramps: true,
+  });
+  const [inclusivePlaces, setInclusivePlaces] = useState<any[]>([]);
+  const [inclusiveCoordinates, setInclusiveCoordinates] = useState<
+    InclusiveCoordinate[]
+  >([]);
+
   const [searchParams, setSearchParams] = useState<{
     category: string;
     around: number;
@@ -54,12 +71,6 @@ export const MapPage = () => {
     isWheelChair: boolean;
   } | null>(null);
 
-  // Стан для зберігання інклюзивних місць
-  const [inclusivePlaces, setInclusivePlaces] = useState<any[]>([]);
-  // Стан для зберігання координат інклюзивних місць
-  const [inclusiveCoordinates, setInclusiveCoordinates] = useState<
-    InclusiveCoordinate[]
-  >([]);
   // Стан для контролю відкриття/закриття бічної панелі
   const [open, setOpen] = useState(true);
 
@@ -86,6 +97,40 @@ export const MapPage = () => {
       skip: !searchParams,
     }
   );
+
+  const {
+    data: inclusiveData = { elements: [] },
+    isLoading: isLoadingInclusive,
+  } = useGetInclusiveInfrastructureQuery(
+    {
+      latitude: location.latitude,
+      longitude: location.longitude,
+      around: around * 1000, // Convert to meters
+      toilets: inclusiveFilters.toilets,
+      busStops: inclusiveFilters.busStops,
+      kerbs: inclusiveFilters.kerbs,
+      tactilePaving: inclusiveFilters.tactilePaving,
+      ramps: inclusiveFilters.ramps,
+      shouldRetrieveRating: false,
+      shouldRetrieveReviews: false,
+      shouldGetImages: true,
+    },
+    {
+      skip: !showInclusiveFeatures, // Skip the query if inclusive features are not requested
+    }
+  );
+
+  const toggleInclusiveFeatures = () => {
+    setShowInclusiveFeatures((prev) => !prev);
+  };
+
+  // Update your Filters component to handle inclusive features
+  const updateInclusiveFilter = (filterName, value) => {
+    setInclusiveFilters((prev) => ({
+      ...prev,
+      [filterName]: value,
+    }));
+  };
 
   const handleSearch = () => {
     setSearchParams({
@@ -196,6 +241,9 @@ export const MapPage = () => {
               structures={data.elements || []}
               inclusivePlaces={inclusivePlaces}
               inclusiveCoordinates={inclusiveCoordinates}
+              inclusiveFeatures={inclusiveData.elements || []} // Pass the inclusive features to the Map
+              showInclusiveFeatures={showInclusiveFeatures} // Pass the flag to control visibility
+              isLoadingInclusive={isLoadingInclusive}
             />
           </Box>
 
@@ -334,6 +382,10 @@ export const MapPage = () => {
                   setAround={setAround}
                   isWheelChair={isWheelChair}
                   setIsWheelChair={setIsWheelChair}
+                  showInclusiveFeatures={showInclusiveFeatures}
+                  setShowInclusiveFeatures={setShowInclusiveFeatures}
+                  inclusiveFilters={inclusiveFilters}
+                  updateInclusiveFilter={updateInclusiveFilter}
                 />
                 <Stack spacing={2} sx={{ overflow: "auto", pb: 2 }}>
                   {(data.elements || []).map((value) => (
@@ -341,24 +393,27 @@ export const MapPage = () => {
                   ))}
 
                   {/* Індикатор наявності інклюзивних місць */}
-                  {inclusiveCoordinates.length > 0 && (
-                    <Box
-                      sx={{
-                        p: 2,
-                        bgcolor: "background.level2",
-                        borderRadius: "sm",
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                      }}
-                    >
-                      <div>
-                        Знайдено інклюзивних місць:{" "}
-                        {inclusiveCoordinates.length}
-                      </div>
-                      <button onClick={clearInclusivePlaces}>Очистити</button>
-                    </Box>
-                  )}
+                  {showInclusiveFeatures &&
+                    inclusiveData.elements.length > 0 && (
+                      <Box
+                        sx={{
+                          p: 2,
+                          bgcolor: "background.level2",
+                          borderRadius: "sm",
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
+                      >
+                        <div>
+                          Знайдено інклюзивних об'єктів:{" "}
+                          {inclusiveData.elements.length}
+                        </div>
+                        <button onClick={() => setShowInclusiveFeatures(false)}>
+                          Сховати
+                        </button>
+                      </Box>
+                    )}
                 </Stack>
               </Stack>
             </Box>

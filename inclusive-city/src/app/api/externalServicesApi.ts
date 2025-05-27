@@ -615,6 +615,122 @@ export class StructureClient extends ApiBase {
     }
     return Promise.resolve<FileResponse>(null as any);
   }
+
+  getInclusiveInfrastructure(
+    latitude: number | undefined,
+    longitude: number | undefined,
+    around: number | undefined,
+    toilets: boolean | undefined,
+    busStops: boolean | undefined,
+    kerbs: boolean | undefined,
+    tactilePaving: boolean | undefined,
+    ramps: boolean | undefined,
+    shouldRetrieveRating: boolean | undefined,
+    shouldRetrieveReviews: boolean | undefined,
+    shouldGetImages: boolean | undefined
+  ): Promise<GetStructuresDto> {
+    let url_ = this.baseUrl + "/api/v1/Structure/inclusive-infrastructure?";
+    if (latitude === null)
+      throw new Error("The parameter 'latitude' cannot be null.");
+    else if (latitude !== undefined)
+      url_ += "Latitude=" + encodeURIComponent("" + latitude) + "&";
+    if (longitude === null)
+      throw new Error("The parameter 'longitude' cannot be null.");
+    else if (longitude !== undefined)
+      url_ += "Longitude=" + encodeURIComponent("" + longitude) + "&";
+    if (around === null)
+      throw new Error("The parameter 'around' cannot be null.");
+    else if (around !== undefined)
+      url_ += "Around=" + encodeURIComponent("" + around) + "&";
+    if (toilets === null)
+      throw new Error("The parameter 'toilets' cannot be null.");
+    else if (toilets !== undefined)
+      url_ += "Toilets=" + encodeURIComponent("" + toilets) + "&";
+    if (busStops === null)
+      throw new Error("The parameter 'busStops' cannot be null.");
+    else if (busStops !== undefined)
+      url_ += "BusStops=" + encodeURIComponent("" + busStops) + "&";
+    if (kerbs === null)
+      throw new Error("The parameter 'kerbs' cannot be null.");
+    else if (kerbs !== undefined)
+      url_ += "Kerbs=" + encodeURIComponent("" + kerbs) + "&";
+    if (tactilePaving === null)
+      throw new Error("The parameter 'tactilePaving' cannot be null.");
+    else if (tactilePaving !== undefined)
+      url_ += "TactilePaving=" + encodeURIComponent("" + tactilePaving) + "&";
+    if (ramps === null)
+      throw new Error("The parameter 'ramps' cannot be null.");
+    else if (ramps !== undefined)
+      url_ += "Ramps=" + encodeURIComponent("" + ramps) + "&";
+    if (shouldRetrieveRating === null)
+      throw new Error("The parameter 'shouldRetrieveRating' cannot be null.");
+    else if (shouldRetrieveRating !== undefined)
+      url_ +=
+        "ShouldRetrieveRating=" +
+        encodeURIComponent("" + shouldRetrieveRating) +
+        "&";
+    if (shouldRetrieveReviews === null)
+      throw new Error("The parameter 'shouldRetrieveReviews' cannot be null.");
+    else if (shouldRetrieveReviews !== undefined)
+      url_ +=
+        "ShouldRetrieveReviews=" +
+        encodeURIComponent("" + shouldRetrieveReviews) +
+        "&";
+    if (shouldGetImages === null)
+      throw new Error("The parameter 'shouldGetImages' cannot be null.");
+    else if (shouldGetImages !== undefined)
+      url_ +=
+        "ShouldGetImages=" + encodeURIComponent("" + shouldGetImages) + "&";
+    url_ = url_.replace(/[?&]$/, "");
+
+    let options_: RequestInit = {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+    };
+
+    return this.transformOptions(options_)
+      .then((transformedOptions_) => {
+        return this.http.fetch(url_, transformedOptions_);
+      })
+      .then((_response: Response) => {
+        return this.processGetInclusiveInfrastructure(_response);
+      });
+  }
+
+  protected processGetInclusiveInfrastructure(
+    response: Response
+  ): Promise<GetStructuresDto> {
+    const status = response.status;
+    let _headers: any = {};
+    if (response.headers && response.headers.forEach) {
+      response.headers.forEach((v: any, k: any) => (_headers[k] = v));
+    }
+    if (status === 200) {
+      return response.text().then((_responseText) => {
+        let result200: any = null;
+        result200 =
+          _responseText === ""
+            ? null
+            : (JSON.parse(
+                _responseText,
+                this.jsonParseReviver
+              ) as GetStructuresDto);
+        return result200;
+      });
+    } else if (status !== 200 && status !== 204) {
+      return response.text().then((_responseText) => {
+        return throwException(
+          "An unexpected server error occurred.",
+          status,
+          _responseText,
+          _headers
+        );
+      });
+    }
+    return Promise.resolve<GetStructuresDto>(null as any);
+  }
 }
 
 export interface ReviewDto {
@@ -708,6 +824,7 @@ export interface OverpassElementDto {
   nodes?: number[] | null;
   tags?: { [key: string]: string } | null;
   members?: OverpassMemberDto[] | null;
+  geometry?: OverpassGeometryDto[] | null;
 }
 
 export interface ElementDto extends OverpassElementDto {
@@ -720,6 +837,11 @@ export interface OverpassMemberDto {
   type?: string;
   ref?: number;
   role?: string;
+}
+
+export interface OverpassGeometryDto {
+  lat?: number;
+  lon?: number;
 }
 
 export interface UploadStructureImagesCommand {

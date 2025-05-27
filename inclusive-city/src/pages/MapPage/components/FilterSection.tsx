@@ -15,8 +15,14 @@ import {
   FormControlLabel,
   MenuItem,
   Select,
+  Collapse,
+  Typography,
+  Switch,
 } from "@mui/material";
 import { Dispatch } from "react";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import AccessibleIcon from "@mui/icons-material/Accessible";
 //import { useGetAllCategoriesQuery } from "../../../api/structureRtkApi";
 
 const localCategories = [
@@ -41,6 +47,16 @@ interface Props {
   setAround: Dispatch<React.SetStateAction<number>>;
   isWheelChair: boolean;
   setIsWheelChair: Dispatch<React.SetStateAction<boolean>>;
+  showInclusiveFeatures?: boolean;
+  setShowInclusiveFeatures?: (value: boolean) => void;
+  inclusiveFilters?: {
+    toilets: boolean;
+    busStops: boolean;
+    kerbs: boolean;
+    tactilePaving: boolean;
+    ramps: boolean;
+  };
+  updateInclusiveFilter?: (name: string, value: boolean) => void;
 }
 
 export default function Filters({
@@ -50,10 +66,22 @@ export default function Filters({
   setAround,
   isWheelChair,
   setIsWheelChair,
+  showInclusiveFeatures = false,
+  setShowInclusiveFeatures = () => {},
+  inclusiveFilters = {
+    toilets: true,
+    busStops: true,
+    kerbs: true,
+    tactilePaving: true,
+    ramps: true,
+  },
+  updateInclusiveFilter = () => {},
 }: Props) {
   const categories = localCategories; // useGetAllCategoriesQuery().data || [];
 
   const [open, setOpen] = React.useState(false);
+  const [expanded, setExpanded] = React.useState(false);
+
   return (
     <Stack
       useFlexGap
@@ -136,6 +164,119 @@ export default function Filters({
             label="Тільки з доступністю для інвалідних візків"
             sx={{ ml: 1 }}
           />
+
+          <Box
+            sx={{
+              mt: 2,
+              p: 2,
+              bgcolor: "background.level1",
+              borderRadius: "sm",
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                cursor: "pointer",
+              }}
+              onClick={() => setExpanded(!expanded)}
+            >
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                <AccessibleIcon sx={{ mr: 1 }} />
+                <Typography variant="subtitle1">Інклюзивні об'єкти</Typography>
+              </Box>
+              {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+            </Box>
+
+            <Collapse in={expanded}>
+              <Box sx={{ mt: 2 }}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={showInclusiveFeatures}
+                      onChange={(e) =>
+                        setShowInclusiveFeatures(e.target.checked)
+                      }
+                    />
+                  }
+                  label="Показати інклюзивні об'єкти"
+                />
+
+                {showInclusiveFeatures && (
+                  <Box sx={{ ml: 2, mt: 1 }}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={inclusiveFilters.toilets}
+                          onChange={(e) =>
+                            updateInclusiveFilter("toilets", e.target.checked)
+                          }
+                          size="small"
+                        />
+                      }
+                      label="Інклюзивні туалети"
+                    />
+
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={inclusiveFilters.busStops}
+                          onChange={(e) =>
+                            updateInclusiveFilter("busStops", e.target.checked)
+                          }
+                          size="small"
+                        />
+                      }
+                      label="Доступні автобусні зупинки"
+                    />
+
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={inclusiveFilters.kerbs}
+                          onChange={(e) =>
+                            updateInclusiveFilter("kerbs", e.target.checked)
+                          }
+                          size="small"
+                        />
+                      }
+                      label="Безбар'єрні бордюри"
+                    />
+
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={inclusiveFilters.tactilePaving}
+                          onChange={(e) =>
+                            updateInclusiveFilter(
+                              "tactilePaving",
+                              e.target.checked
+                            )
+                          }
+                          size="small"
+                        />
+                      }
+                      label="Тактильна плитка"
+                    />
+
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={inclusiveFilters.ramps}
+                          onChange={(e) =>
+                            updateInclusiveFilter("ramps", e.target.checked)
+                          }
+                          size="small"
+                        />
+                      }
+                      label="Пандуси"
+                    />
+                  </Box>
+                )}
+              </Box>
+            </Collapse>
+          </Box>
         </Stack>
       </Drawer>
     </Stack>
