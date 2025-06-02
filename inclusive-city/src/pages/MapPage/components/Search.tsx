@@ -28,10 +28,10 @@ export default function Search(props: {
           />
         </FormControl>
         <Button variant="solid" color="primary" onClick={props.onSearch}>
-          Search
+          Пошук
         </Button>
       </Stack>
-      <Typography level="body-sm">{props.len} items found</Typography>
+      <Typography level="body-sm">{props.len} місць знайдено</Typography>
     </div>
   );
 }

@@ -378,7 +378,27 @@ export const Map = ({
                 >
                   <Popup>
                     <Box sx={{ display: "flex", flexDirection: "column" }}>
-                      {/* ...existing code... */}
+                      {place ? (
+                        <>
+                          <div style={{ fontWeight: "bold" }}>
+                            Інклюзивне місце
+                          </div>
+                          <div>{place.address}</div>
+                          {place.tags && place.tags.name && (
+                            <div>{place.tags.name}</div>
+                          )}
+                          {place.tags && place.tags.wheelchair && (
+                            <div>
+                              Доступність:{" "}
+                              {place.tags.wheelchair === "yes"
+                                ? "Повна"
+                                : "Обмежена"}
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <div>Інклюзивне місце</div>
+                      )}
                       <Button
                         onClick={() => {
                           setRoutePoints({

@@ -48,7 +48,7 @@ export const HowItWorks = () => {
             textAlign={'center'}
             mt={{ xs: 12, sm: -2}}
             >
-                How it works?
+                Як це працює?
             </Typography>
             {isMobile ? (  <Grid
             container spacing={0} 
