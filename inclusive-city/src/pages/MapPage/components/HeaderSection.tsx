@@ -6,11 +6,11 @@ export default function HeaderSection() {
   return (
     <Stack sx={{ mb: 2, mt: 4 }}>
       <Stack direction="row" justifyContent="space-between" sx={{ width: '100%' }}>
-        <Typography level="h2">Search properties</Typography>
+        <Typography level="h2">Пошук інклюзивних місць</Typography>
       </Stack>
 
       <Typography level="body-md" color="neutral">
-        Find nearest way at one of our properties.
+       Знайди найближчі інклюзивні місця, які відповідають твоїм потребам.
       </Typography>
     </Stack>
   );

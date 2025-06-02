@@ -15,6 +15,7 @@ import { Button } from "@mui/joy";
 import { useNavigate } from "react-router-dom";
 import { ElementDto } from "../../../app/api/externalServicesApi";
 import { Box } from "@mui/material";
+import { useAppSelector } from "../../../app/hooks";
 
 type RentalCardProps = {
   liked?: boolean;
@@ -29,6 +30,7 @@ export default function StructureCard({
 }: RentalCardProps) {
   const [isLiked, setIsLiked] = React.useState(liked);
   const navigate = useNavigate();
+  const user = useAppSelector((state) => state.user.userData);
 
   return (
     <Card
@@ -190,7 +192,11 @@ export default function StructureCard({
           <StarRating
             readonly={true}
             sizeText="20px"
-            idStructure={""}
+            idStructure={structure.id ?? 0}
+            osmType={structure.type || "node"}
+            username={user.userName}
+            createdBy={user.userId}
+            imageBase64={""}
             rating={Math.round(structure.rating || 0)}
           />
         </Stack>

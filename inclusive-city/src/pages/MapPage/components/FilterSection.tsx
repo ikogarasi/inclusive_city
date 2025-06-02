@@ -69,7 +69,7 @@ export default function Filters({
         startDecorator={<FilterAltOutlined />}
         onClick={() => setOpen(true)}
       >
-        Filters
+        Фільтри
       </Button>
       <OrderBy />
       <Drawer open={open} onClose={() => setOpen(false)}>

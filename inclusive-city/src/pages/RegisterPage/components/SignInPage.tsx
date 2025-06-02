@@ -152,11 +152,11 @@ export default function SignInPage() {
           >
             <Stack gap={4} sx={{ mb: 2 }}>
               <Stack gap={1}>
-                <Typography level="h3">Sign in</Typography>
+                <Typography level="h3">Увійдіть у свій профіль</Typography>
                 <Typography level="body-sm">
-                  New to company?{" "}
+                  Вперше тут?{" "}
                   <Link onClick={() => navigate("/signup")} level="title-sm">
-                    Sign up!
+                    Зареєструйтесь!
                   </Link>
                 </Typography>
                 <Typography level="body-sm" sx={{color: 'red'}} display={errorMessage ? 'block' : 'none'}>Check your nickname or password and try again</Typography>
@@ -166,11 +166,11 @@ export default function SignInPage() {
             <Stack gap={4} sx={{ mt: 2 }}>
               <form onSubmit={handleSubmit}>
                 <FormControl required>
-                  <FormLabel>Username</FormLabel>
+                  <FormLabel>Назва користувача</FormLabel>
                   <Input error={errorMessage ? true : false} type="username" name="username" />
                 </FormControl>
                 <FormControl required>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel>Пароль</FormLabel>
                   <Input error={errorMessage ? true : false} type="password" name="password" />
                 </FormControl>
                 <Stack gap={4} sx={{ mt: 2 }}>
@@ -183,7 +183,7 @@ export default function SignInPage() {
                   >
                   </Box>
                   <Button type="submit" fullWidth>
-                    Sign in
+                    Увійти
                   </Button>
                 </Stack>
               </form>

@@ -15,7 +15,7 @@ export const UserQuestion = () => {
           marginTop: 3,
         }}
       >
-        <Typography level="h2">The latest your questions:</Typography>
+        <Typography level="h2">Ваші останні запитання:</Typography>
         {data.map((value) => (
           <Box sx={{ marginLeft: 2, marginTop: 3, marginBottom: 4 }}>
             <Typography
@@ -31,7 +31,7 @@ export const UserQuestion = () => {
               {value.question.isClosed ? (
                 <b style={{ color: "green" }}>Answered</b>
               ) : (
-                <b style={{ color: "red" }}>Waiting for answer</b>
+                <b style={{ color: "red" }}>Очікують на відповідь</b>
               )}
             </Typography>
             <Typography

@@ -1,7 +1,5 @@
 import { BottomNavigation, BottomNavigationAction, Box } from "@mui/material";
 import React from "react";
-import { EditInfoPage } from "../../AdminPage/components/EditinfoPage";
-
 import { SendQuestion } from "./SendQuestion";
 import { UserQuestion } from "./UserQuestion";
 
@@ -20,13 +18,13 @@ export const TwoChoice = () => {
           setValue(newValue);
         }}
       >
-        <BottomNavigationAction sx={{border: 2, borderColor: `${value===0 ? '' : 'darkgray'}`, borderBottom: `${value===0 ? '1' : ''}`, borderBottomColor: `${value===0 ? 'white' : ''}`, borderRadius: '16px 16px 0px 0px'}} label="Send question"/>
-        <BottomNavigationAction sx={{border: 2, borderColor: `${value===1 ? '' : 'darkgray'}`, borderBottom: `${value===0 ? '1' : ''}`, borderBottomColor: `${value===1 ? 'white' : ''}`, borderRadius: '16px 16px 0px 0px'}} label="My questions" />
+        <BottomNavigationAction sx={{border: 2, borderColor: `${value===0 ? '' : 'darkgray'}`, borderBottom: `${value===0 ? '1' : ''}`, borderBottomColor: `${value===0 ? 'white' : ''}`, borderRadius: '16px 16px 0px 0px'}} label="Надіслати запитання"/>
+        <BottomNavigationAction sx={{border: 2, borderColor: `${value===1 ? '' : 'darkgray'}`, borderBottom: `${value===0 ? '1' : ''}`, borderBottomColor: `${value===1 ? 'white' : ''}`, borderRadius: '16px 16px 0px 0px'}} label="Мої питання" />
       </BottomNavigation>
       
     </Box>
     <Box width={'95%'} marginBottom={10} position={'relative'}
-            zIndex={'fab'} sx={{borderTop: 2, borderColor: 'darkgray'}}>
+            zIndex={1} sx={{borderTop: 2, borderColor: 'darkgray'}}>
                 <Box display={value===0 ? 'block' : 'none'}>
                 <SendQuestion/>
                 </Box>

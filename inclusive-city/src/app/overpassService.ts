@@ -113,7 +113,7 @@ export const navigateToMapPage = (places: InclusivePlace[], navigate: (path: str
   console.log(places)
   
   // Перехід на існуючу сторінку карти
-  window.location.href = '/map'; 
+  //window.location.href = '/map'; 
 };
 
 // Функція для збереження координат інклюзивних місць
@@ -144,17 +144,11 @@ export const findInclusivePlaces = async (overpassQuery: string): Promise<Inclus
       overpassQuery = overpassQuery.trim() + ' out center;';
     }
     
-    console.log('Executing Overpass query:', overpassQuery);
-    
     // Виконуємо запит до Overpass API
     const overpassResults = await queryOverpassAPI(overpassQuery);
     
-    // Логуємо кількість отриманих результатів
-    console.log(`Received ${overpassResults.elements?.length || 0} elements from Overpass`);
-    
-    // Якщо немає результатів, можливо варто розширити критерії пошуку
+    // Якщо немає результатів, Повертаємо порожній масив, оскільки немає місць для обробки
     if (!overpassResults.elements || overpassResults.elements.length === 0) {
-      // Повертаємо порожній масив, оскільки немає місць для обробки
       return [];
     }
     
@@ -179,7 +173,8 @@ export const detectRouteIntent = async (userMessage: string, places: InclusivePl
 
 Запит: "${userMessage}"
 
-Якщо користувач хоче маршрут — поверни лише назву або адресу відповідного місця з цього списку. Інакше — "Немає маршруту".`;
+Якщо користувач хоче маршрут — поверни лише назву або 
+адресу відповідного місця з цього списку. Інакше — "Немає маршруту".`;
 
   const response = await fetch(import.meta.env.VITE_API_URL, {
     method: "POST",

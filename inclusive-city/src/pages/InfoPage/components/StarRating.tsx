@@ -7,12 +7,16 @@ import SentimentSatisfiedIcon from "@mui/icons-material/SentimentSatisfied";
 import SentimentSatisfiedAltIcon from "@mui/icons-material/SentimentSatisfiedAltOutlined";
 import SentimentVerySatisfiedIcon from "@mui/icons-material/SentimentVerySatisfied";
 import { Box, Button, TextField, Typography } from "@mui/material";
-import { useSubmitReviewMutation } from "../../../api/reviewRtkApi";
+import { useAddReviewMutation } from "../../../api/externalServicesRktApi";
 
 export const StarRating: React.FC<{
   readonly: boolean;
   sizeText: string;
-  idStructure: string;
+  idStructure: number;
+  osmType: string;
+  imageBase64: string | null;
+  createdBy: number;
+  username: string;
   rating: number;
 }> = (props) => {
   const StyledRating = styled(Rating)(({ theme }) => ({
@@ -45,7 +49,7 @@ export const StarRating: React.FC<{
     },
     5: {
       icon: <SentimentVerySatisfiedIcon color="success" fontSize="large" />,
-      label: "Excellent",
+      label: "Прекрасно",
     },
   };
 
@@ -112,7 +116,7 @@ export const StarRating: React.FC<{
     }
   };
 
-  const [addReview] = useSubmitReviewMutation();
+  const [addReview] = useAddReviewMutation();
 
   async function addReviewButton(e: React.MouseEvent<HTMLElement>) {
     e.preventDefault();
@@ -120,12 +124,25 @@ export const StarRating: React.FC<{
       console.log("Rate can`t be 0");
     } else {
       await addReview({
-        structureId: props.idStructure,
-        description: description,
-        rating: value,
+        osmId: props.idStructure,
+        osmType: props.osmType,
+        username: props.username,
+        imageBase64: props.imageBase64,
+        createdBy: props.createdBy,
+        comment: description,
+        rate: value,
       });
+
+      console.log(
+        props.osmType,
+        props.username,
+        props.createdBy,
+        props.imageBase64
+      );
     }
   }
+
+  console.log("StarRating props:", props);
 
   return (
     <div>
@@ -170,7 +187,7 @@ export const StarRating: React.FC<{
             sx={{ ml: 2 }}
             color="text.secondary"
           >
-            Not rated
+            Не оцінено
           </Typography>
         )}
       </Box>

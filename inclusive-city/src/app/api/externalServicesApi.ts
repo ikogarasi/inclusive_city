@@ -634,7 +634,7 @@ export interface AddReviewCommand {
   osmType?: string;
   comment?: string;
   imageBase64?: string | null;
-  createdBy?: string;
+  createdBy?: number;
   username?: string;
   rate?: number;
 }

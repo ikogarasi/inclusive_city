@@ -3,7 +3,8 @@ import { Box, Divider } from "@mui/material";
 import TwoSidedLayout from "./TwoSlideLayout";
 import { StarRating } from "./StarRating";
 import { useNavigate, useParams } from "react-router-dom";
-import { useGetStructureByIdQuery } from "../../../api/externalServicesRktApi"; // <-- add import
+import { useGetStructureByIdQuery } from "../../../api/externalServicesRktApi"; 
+import { useAppSelector } from "../../../app/hooks";
 
 export const ReviewPage = () => {
   const { type, structureId } = useParams();
@@ -18,6 +19,8 @@ export const ReviewPage = () => {
   const navigate = useNavigate();
 
   const imageUrl = structure?.imageUrls?.[0] || "/placeholder.png";
+  const user = useAppSelector((state) => state.user.userData);
+
 
   return (
     <Box sx={{ paddingBottom: 5 }}>
@@ -44,8 +47,12 @@ export const ReviewPage = () => {
             <StarRating
               readonly={false}
               sizeText="30px"
-              idStructure={structureId ?? ""}
-              rating={Math.ceil(structure?.rating || 0)}
+              idStructure={structure.id ?? 0}
+              osmType={structure.type || "node"}
+              username={user.userName}
+              createdBy={user.userId}
+              imageBase64={""}
+              rating={Math.round(structure.rating || 0)}
             />
           )}
         </Box>
@@ -59,7 +66,7 @@ export const ReviewPage = () => {
           marginTop: 3,
         }}
       >
-        <Typography level="h2">The latest comments:</Typography>
+        <Typography level="h2">Останні коментарі:</Typography>
         {structure?.reviews?.map((value) => (
           <Box sx={{ marginLeft: 5, marginTop: 3 }} key={value.id}>
             <Typography
@@ -71,13 +78,21 @@ export const ReviewPage = () => {
               <b>{value.username}</b>
             </Typography>
             <Typography sx={{ marginTop: 2 }}>
-              <i>{value.createdAt?.toDateString()}</i>
+              <i>
+                {value.createdAt
+                  ? new Date(value.createdAt).toDateString()
+                  : "Unknown date"}
+              </i>
             </Typography>
             <StarRating
               readonly={true}
               sizeText="30px"
-              idStructure={structureId ?? ""}
-              rating={value.rate || 0}
+              idStructure={structure.id ?? 0}
+              osmType={structure.type || "node"}
+              username={user.userName}
+              createdBy={user.userId}
+              imageBase64={""}
+              rating={value.rate ?? 0}
             />
             <Typography textColor="text.secondary" sx={{ marginTop: 2 }}>
               {value.comment}

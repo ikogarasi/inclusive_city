@@ -19,6 +19,9 @@ import StructureCard from "./components/StructureCard";
 import Search from "./components/Search";
 import { useGetStructuresQuery } from "../../api/externalServicesRktApi";
 import { skipToken } from "@reduxjs/toolkit/query";
+import { useDispatch } from "react-redux";
+import { setStructures } from "../../api/structureOverpassSlice";
+
 
 // Інтерфейс для координат інклюзивних місць
 interface InclusiveCoordinate {
@@ -28,7 +31,7 @@ interface InclusiveCoordinate {
 }
 
 // Ширина бічної панелі
-const drawerWidth = 350;
+const drawerWidth = 550;
 
 // Стилізована "ручка" для перетягування
 const Puller = styled("div")(({ theme }) => ({
@@ -165,6 +168,15 @@ export const MapPage = () => {
   const toggleDrawer = (newOpen: boolean) => () => {
     setOpen(newOpen);
   };
+
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (Array.isArray(data.elements) && data.elements.length > 0) {
+      dispatch(setStructures(data.elements));
+    }
+  }, [data.elements]);
+  
 
   return (
     <>

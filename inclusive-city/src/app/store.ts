@@ -5,6 +5,8 @@ import reviewRtkApi from "../api/reviewRtkApi";
 import structureRtkApi from "../api/structureRtkApi";
 import userSlice from "../api/userSlice";
 import externalServicesRktApi from "../api/externalServicesRktApi";
+import structuresReducer from "../api/structureOverpassSlice"; 
+
 
 export const store = configureStore({
   reducer: {
@@ -19,6 +21,7 @@ export const store = configureStore({
     [externalServicesRktApi.routingRtkApi.reducerPath]:
       externalServicesRktApi.routingRtkApi.reducer,
     user: userSlice,
+    structures: structuresReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()

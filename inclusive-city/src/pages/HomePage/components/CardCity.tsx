@@ -29,23 +29,24 @@ return(
           level="body-lg"
           fontWeight="lg"
           fontSize={60}
-          sx={{fontWeight: 'bold', textDecoration: 'outline'}}
+          sx={{fontWeight: 'bold', textDecoration: 'outline', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',}}
           textAlign={'center'}
           textColor="#fff"
           mt={{ xs: 12, sm: 10 }}
         >
-          Welcome to Lviv!
+          Вітаємо у Львові!
         </Typography>
         <Typography
           level="body-lg"
           fontWeight="lg"
           fontSize={32}
-          sx={{ textDecoration: 'outline'}}
+          sx={{ textDecoration: 'outline', fontWeight: 'bold', textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',}}
           textAlign={{xs: 'start', sm: 'center'}}
           textColor="#fff"
           marginTop={2}
+          
         >
-          Where do you want to go?
+          Куди б ви хотіли завітати сьогодні?
         </Typography>
         <Button 
         color="success"
@@ -55,11 +56,11 @@ return(
           color: '#fff', 
           fontSize: 22, 
           textTransform: 'none',
-          marginTop: 4
+          marginTop: 4,
           }}
           >
 
-          Find your comfortable way!
+          Знайди свій комфортний шлях!
         </Button>
         </Box>
       </CardContent>

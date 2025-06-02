@@ -13,7 +13,7 @@ export default function OrderBy() {
         endDecorator={<ArrowDropDown />}
         sx={{ whiteSpace: "nowrap" }}
       >
-        Order by
+        Впорядкувати за
       </MenuButton>
       <Menu sx={{ minWidth: 120 }}>
         <MenuItem>Distance</MenuItem>
